@@ -1,4 +1,4 @@
-;=========== MACROS (Support) =========== NO DOC
+;=========== MACROS (Support) =========== STABLE, NO DOC
 macro EndFunction
 	
 	pop si
@@ -39,19 +39,20 @@ macro InitBasicProc IF_SpOffset_PARAM
 	
 endm
 
-;=========== MACROS =========== STABLE, NO DOC
-macro Print P_PrintableVariable_PARAM
+;=========== MACROS =========== STABLE , NO DOC
+macro Print P_PrintableVariable_PARAM ;STABLE
 	
 	InitFunction
-	
-	push offset P_PrintableVariable_PARAM
+
+	mov ax, offset P_PrintableVariable_PARAM
+	push ax
 	call Print_PROC
 	
 	EndFunction
 	
 endm
 ;===========PROCEDURES========== STABLE, NO DOC
-; =====Prints from the address at the top of the stack=====
+; =====Prints from the address at the top of the stack===== STABLE
 P_PrintableAdress_VAR equ [bp + 4]
 proc Print_PROC
 	

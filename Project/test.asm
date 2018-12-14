@@ -52,6 +52,7 @@ start:
 	
 	;FilesLIB 1/1
 	CreateFile File1, File1H
+	OpenFile File1, 'b'
 	
 exit:
 
