@@ -17,17 +17,25 @@ PROC SwitchGraphicsMode_PROC
 	
 	InitBasicProc 0
 	
-	mov ax, SGM_DesiredMode_VAR 
+	mov ah, SGM_DesiredMode_VAR 
 	
-	cmp ax, 1h
+	cmp ah, 'g'
 	je SGM_SwitchToGraphicMode_LABEL
 	
-	mov ax, 2h
-	int 10h
-	ret
+	cmp ah, 't'
+	je SGM_SwitchToTextMode_LABEL
+	
+SGM_SwitchToTextMode_LABEL:
+	mov al, 3h
+	jmp SGM_Finish_LABEL
 	
 SGM_SwitchToGraphicMode_LABEL:
-	mov ax, 13h
+	mov al, 13h
+	jmp SGM_Finish_LABEL
+	
+SGM_Finish_LABEL:
+
+	mov ah, 0
 	INT 10h
 	
 	EndBasicProc 0

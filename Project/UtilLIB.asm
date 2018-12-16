@@ -18,6 +18,19 @@ macro SetCursorPos SCP_X_PARAM, SCP_Y_PARAM
 	EndFunction
 
 endm
+
+macro InitMouse 
+	push ax
+	call InitMouse_PROC
+	pop ax
+endm	
+
+macro DisplayCursor
+
+	push ax
+	call DisplayCursor_PROC
+	pop ax
+endm
 ;=========== PROCEDURES ========== STABLE, NO DOC
 ;=====Clears the screen=====
 proc ClearScreen_PROC
@@ -52,3 +65,21 @@ proc SetCursorPos_PROC
 	
 endp SetCursorPos_PROC
 ;-----------------------------------
+
+;===== Starts the mouse actor =====
+proc InitMouse_PROC
+	
+	InitBasicProc 0
+	
+	mov ax, 0
+	int 33h
+	
+	EndBasicProc
+endp	
+
+proc DisplayCursor_PROC
+
+	mov ax, 1
+	int 33h
+	
+endm

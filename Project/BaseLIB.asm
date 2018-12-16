@@ -51,8 +51,19 @@ macro Print P_PrintableVariable_PARAM ;STABLE
 	EndFunction
 	
 endm
+
+macro PrintChar PC_CharToWrite_PARAM
+	
+	InitFunction
+	
+	push PC_CharToWrite_PARAM
+	call PrintChar_PROC
+	
+	EndFunction
+	
+endm
 ;===========PROCEDURES========== STABLE, NO DOC
-; =====Prints from the address at the top of the stack===== STABLE
+; =====Prints from the address at the top of the stack===== STABLE, NO DOC
 P_PrintableAdress_VAR equ [bp + 4]
 proc Print_PROC
 	
@@ -67,3 +78,23 @@ proc Print_PROC
 	
 endp Print_PROC
 ;----------------------------------------------------------
+
+PC_CharToWrite_VAR equ [bp + 4] ; STABLE, NO DOC
+proc PrintChar_PROC
+
+	InitBasicProc 0
+	
+	mov al, PC_CharToWrite_VAR
+	mov ah, 0eh
+	int 10h
+	
+	EndBasicProc 0
+	ret 2
+endp PrintChar_PROC
+	
+	
+	
+	
+	
+
+
