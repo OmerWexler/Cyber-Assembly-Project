@@ -1,5 +1,5 @@
 ;========== CONSTANTS ========== NO DOC
-FileCreateErr db 'Error while creating file$'
+FileCreateErr db 'Error while creating file: $'
 OF_FileName dw ?, ?
 OF_AccessMode dw ?
 ;=========== MACROS =========== STABLE, NO DOC
@@ -34,10 +34,26 @@ macro WriteToFile WTF_FileHandle_PARAM, WTF_DataToWrite_PARAM
 
 endm
 
+macro CloseFile COF_FileHandle_PARAM
+
+	InitFunction
+	push [COF_FileHandle_PARAM]
+	call CloseFile_PROC
+	EndFunction
+endm
+
+macro DeleteFile DF_FileName_PARAM
+	
+	InitFunction
+	push offset DF_FileName_PARAM
+	call DeleteFile_PROC
+	EndFunction
+	
+endm	
 
 ;=========== PROCEDURES ========== STABLE, NO DOC 
 ;===== Creates a file with the inserted parameters =====
-CF_FileName_VAR equ [bp + 6]
+CF_FileNameOffset_VAR equ [bp + 6]
 CF_FileHandleOffset_VAR equ [bp + 4]
 proc CreateFile_PROC
 	
@@ -45,7 +61,7 @@ proc CreateFile_PROC
 	
 	mov ah, 3ch
 	mov cx, 0
-	mov dx, CF_FileName_VAR
+	mov dx, CF_FileNameOffset_VAR
 	mov ah, 3ch
 	int 21h
 	jc CF_Error_LABEL
@@ -55,7 +71,7 @@ proc CreateFile_PROC
 	jmp CF_Finish_LABEL
 	
 CF_Error_LABEL:
-	Print FileCreateErr
+	PrintChar 'E'
 	
 CF_Finish_LABEL:
 	EndBasicProc 0
@@ -144,6 +160,80 @@ WTF_Continue_LABEL:
 	
 endp WriteToFile_PROC
 
+;===== Closes a file in use ===== STABLE, NO DOC
+COF_FileHandle_VAR equ [bp + 4]
+proc CloseFile_PROC
+	
+	InitBasicProc 0
+	mov bx, COF_FileHandle_VAR
+	mov ah, 3Eh
+	int 21h
+	EndBasicProc 0
+	ret 2
+	
+endp
+	
+;===== Deletes a file ===== NO DOC, MISSING, NOT STABLE
+DF_FileNameOffset_VAR equ [bp + 4]
+proc DeleteFile_PROC
+	
+	InitBasicProc 0
+	
+	mov dx, DF_FileNameOffset_VAR
+	mov ah, 41h
+	int 21h
+	
+	EndBasicProc 0
+endp
+
+;===== Sets the cursor position inside a file ===== NOT STABLE, NO DOC
+SF_FileHandle_VAR equ [bp + 10]
+SF_Segment_VAR equ [bp + 8]
+SF_Offset_VAR equ [bp + 6]
+SF_SeekMode_VAR equ [bp + 4]
+proc SeekFile_PROC
+
+	InitBasicProc 0
+	
+	mov ah, SF_SeekMode_VAR
+	
+	cmp ah, 's'
+	je SF_StartOfFile_LABEL
+ 	 
+	cmp ah, 'c'
+	je SF_CurrentPosition_LABEL
+	 
+	cmp ah, 'e'
+	je SF_EndOfFile_LABEL
+	
+SF_StartOfFile_LABEL:
+	mov al, 0
+	jmp SF_Finish_LABEL
+	
+SF_CurrentPosition_LABEL:
+	mov al, 1
+	jmp SF_Finish_LABEL
+	
+SF_EndOfFile_LABEL:
+	mov al, 2
+	jmp SF_Finish_LABEL
+	
+SF_Finish_LABEL:
+	mov bx, SF_FileHandle_VAR 
+	mov cx, SF_Segment_VAR
+	mov dx, SF_Offset_VAR
+	mov ah, 42h
+	jc SF_Error_LABEL
+	
+	EndBasicProc 0
+	ret 8
+	
+SF_Error_LABEL:
+	PrintChar 'E'
+	
+	EndBasicProc 0
+	ret 8
+endp SeekFile_PROC
 
 
 

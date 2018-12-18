@@ -55,7 +55,7 @@ proc SetCursorPos_PROC
 	
 	mov dl, SCP_X_Var	; X
 	mov dh, SCP_Y_Var	; Y
-	mov bh, 0  ; Page numbertlot
+	mov bh, 0  ; Page number lot
 	
 	mov ah, 2
 	int 10h
@@ -66,20 +66,3 @@ proc SetCursorPos_PROC
 endp SetCursorPos_PROC
 ;-----------------------------------
 
-;===== Starts the mouse actor =====
-proc InitMouse_PROC
-	
-	InitBasicProc 0
-	
-	mov ax, 0
-	int 33h
-	
-	EndBasicProc
-endp	
-
-proc DisplayCursor_PROC
-
-	mov ax, 1
-	int 33h
-	
-endm

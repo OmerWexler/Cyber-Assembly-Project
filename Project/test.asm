@@ -1,23 +1,17 @@
 IDEAL
 MODEL small
 STACK 100h
+
 DATASEG
 
-File1 db 'test1.txt', 0
+File1 db 'testfile.txt', 0,'$'
 File1H dw ?
 
 PrintAble db 'Print macro works ','$'
 
 
 CODESEG
-
 include 'Library.asm'
-
-proc try
-
-
-	ret
-endp try
 
 start:
 	mov ax, @data
@@ -43,7 +37,7 @@ start:
 	;EndFunction 0
 	
 	;Print PrintAble
-	;PrintChar 'a'
+	;PrintChar 'E'
 	
 	;UtilLIB 2/2
 	;ClearScreen
@@ -57,6 +51,18 @@ start:
 	CreateFile File1, File1H
 	OpenFile File1, File1H,'b'
 	WriteToFile File1H, PrintAble
+	;push [File1H]
+	;push 1d
+	;push 100d
+	;push 'c'
+	;call SeekFile_PROC
+	WriteToFile File1H, PrintAble
+	
+	CloseFile File1H
+	WaitForInput
+	DeleteFile File1
+	
+	
 	
 exit:
 
