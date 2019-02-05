@@ -20,16 +20,27 @@ macro SetCursorPos SCP_X_PARAM, SCP_Y_PARAM
 endm
 
 macro InitMouse 
-	push ax
+	
+	InitFunction
 	call InitMouse_PROC
-	pop ax
+	EndFunction
+	
 endm	
 
 macro DisplayCursor
 
-	push ax
+	InitFunction
 	call DisplayCursor_PROC
-	pop ax
+	EndFunction
+	
+endm
+
+macro WaitTime WT_TimeInSeconds_PARAM
+	
+	InitFunction
+	push WT_TimeInSeconds_PARAM
+	call WaitTime_PROC
+	EndFunction
 endm
 ;=========== PROCEDURES ========== STABLE, NO DOC
 ;=====Clears the screen=====
@@ -65,4 +76,28 @@ proc SetCursorPos_PROC
 	
 endp SetCursorPos_PROC
 ;-----------------------------------
+
+WT_TimeInSeconds_VAR equ [bp + 4]
+proc WaitTime_PROC
+
+	InitBasicProc 0
+	mov ax, 0fh
+	;mul WT_TimeInSeconds_VAR
+	mov cx, ax
+	
+	mov ax, 4240h
+	;mul WT_TimeInSeconds_VAR
+	mov dx, ax
+
+	mov ah, 86h
+	int 15h
+	
+	EndBasicProc 0
+	ret 2
+endp WaitTime_PROC
+	
+
+
+
+
 

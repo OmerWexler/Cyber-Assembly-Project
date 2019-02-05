@@ -6,7 +6,6 @@ macro EndFunction
 	pop dx
 	pop cx
 	pop bx
-	pop ax
 	pop bp
 	
 endm
@@ -14,7 +13,6 @@ endm
 macro InitFunction
 	
 	push bp
-	push ax
 	push bx
 	push cx
 	push dx

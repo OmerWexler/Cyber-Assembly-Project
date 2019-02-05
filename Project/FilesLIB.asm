@@ -1,7 +1,5 @@
 ;========== CONSTANTS ========== NO DOC
-FileCreateErr db 'Error while creating file: $'
-OF_FileName dw ?, ?
-OF_AccessMode dw ?
+buffer db 100d dup(0)
 ;=========== MACROS =========== STABLE, NO DOC
 macro CreateFile CF_FileName_PARAM, CF_FileHandle_PARAM
 	
@@ -31,7 +29,7 @@ macro WriteToFile WTF_FileHandle_PARAM, WTF_DataToWrite_PARAM
 	push offset WTF_DataToWrite_PARAM
 	call WriteToFile_PROC
 	EndFunction
-
+	
 endm
 
 macro CloseFile COF_FileHandle_PARAM
@@ -49,7 +47,19 @@ macro DeleteFile DF_FileName_PARAM
 	call DeleteFile_PROC
 	EndFunction
 	
-endm	
+endm
+
+macro ReadFromFile RFF_FileHandle_PARAM, RFF_BytesToRead_PARAM, RFF_VarToInsertTo_PARAM
+	
+	InitFunction
+	
+	push [RFF_FileHandle_PARAM]
+	push [RFF_BytesToRead_PARAM]
+	push offset RFF_VarToInsertTo_PARAM
+	call ReadFromFile_PROC
+	
+	EndFunction
+endm
 
 ;=========== PROCEDURES ========== STABLE, NO DOC 
 ;===== Creates a file with the inserted parameters =====
@@ -59,7 +69,6 @@ proc CreateFile_PROC
 	
 	InitBasicProc 0
 	
-	mov ah, 3ch
 	mov cx, 0
 	mov dx, CF_FileNameOffset_VAR
 	mov ah, 3ch
@@ -155,6 +164,7 @@ WTF_Continue_LABEL:
 	mov ah, 40h
 	int 21h
 	
+	mov ax, WTF_CharsCounter_VAR
 	EndBasicProc 2
 	ret 4
 	
@@ -178,7 +188,6 @@ DF_FileNameOffset_VAR equ [bp + 4]
 proc DeleteFile_PROC
 	
 	InitBasicProc 0
-	
 	mov dx, DF_FileNameOffset_VAR
 	mov ah, 41h
 	int 21h
@@ -186,64 +195,51 @@ proc DeleteFile_PROC
 	EndBasicProc 0
 endp
 
-;===== Sets the cursor position inside a file ===== NOT STABLE, NO DOC
-SF_FileHandle_VAR equ [bp + 10]
-SF_Segment_VAR equ [bp + 8]
-SF_Offset_VAR equ [bp + 6]
-SF_SeekMode_VAR equ [bp + 4]
-proc SeekFile_PROC
-
+;===== Reads from a file =====
+RFF_FileHandle_VAR equ [bp + 8]
+RFF_BytesToRead_VAR equ [bp + 6]
+RFF_OffsetToInsertTo_VAR equ [bp + 4]
+proc ReadFromFile_PROC
+	
 	InitBasicProc 0
 	
-	mov ah, SF_SeekMode_VAR
+	mov dx, offset buffer
+	mov bx, RFF_FileHandle_VAR
+	mov cx, RFF_BytesToRead_VAR
+	mov ah, 3fh
+	int 21h
 	
-	cmp ah, 's'
-	je SF_StartOfFile_LABEL
- 	 
-	cmp ah, 'c'
-	je SF_CurrentPosition_LABEL
-	 
-	cmp ah, 'e'
-	je SF_EndOfFile_LABEL
-	
-SF_StartOfFile_LABEL:
-	mov al, 0
-	jmp SF_Finish_LABEL
-	
-SF_CurrentPosition_LABEL:
-	mov al, 1
-	jmp SF_Finish_LABEL
-	
-SF_EndOfFile_LABEL:
-	mov al, 2
-	jmp SF_Finish_LABEL
-	
-SF_Finish_LABEL:
-	mov bx, SF_FileHandle_VAR 
-	mov cx, SF_Segment_VAR
-	mov dx, SF_Offset_VAR
-	mov ah, 42h
-	jc SF_Error_LABEL
+	xor di, di
+	mov bx, RFF_OffsetToInsertTo_VAR
+	mov cx, RFF_BytesToRead_VAR
+	InsertToTarget:
+		mov al, [buffer + di]
+		mov [bx + di], al
+		
+		inc di
+		loop InsertToTarget
 	
 	EndBasicProc 0
-	ret 8
+	ret 6
 	
-SF_Error_LABEL:
-	PrintChar 'E'
+endp ReadFromFile_PROC	
 	
-	EndBasicProc 0
-	ret 8
-endp SeekFile_PROC
 
-
-
-
-
-
-
-
-
-
-
-
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 
