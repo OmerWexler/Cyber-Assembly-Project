@@ -3,62 +3,62 @@ buffer db 100d dup(0)
 ;=========== MACROS =========== STABLE, NO DOC
 macro CreateFile CF_FileName_PARAM, CF_FileHandle_PARAM
 	
-	InitFunction 
-	push offset CF_FileName_PARAM
+	InitFunction ;pushes all registers 
+	push offset CF_FileName_PARAM 
 	push offset CF_FileHandle_PARAM
 	call CreateFile_PROC
-	EndFunction
+	EndFunction ;pops all registers back
 	
 endm
 	
 macro OpenFile OF_FileName_PARAM, OF_FileHandle_PARAM, OF_AccessMode_PARAM
 	
-	InitFunction
+	InitFunction ;pushes all registers
 	push offset OF_FileName_PARAM
 	push offset OF_FileHandle_PARAM
 	push OF_AccessMode_PARAM
 	call OpenFile_PROC
-	EndFunction
+	EndFunction ;pops all registers back
 	
 endm
 
 macro WriteToFile WTF_FileHandle_PARAM, WTF_DataToWrite_PARAM
 
-	InitFunction
+	InitFunction ;pushes all registers
 	push [WTF_FileHandle_PARAM]
 	push offset WTF_DataToWrite_PARAM
 	call WriteToFile_PROC
-	EndFunction
+	EndFunction ;pops all registers back
 	
 endm
 
 macro CloseFile COF_FileHandle_PARAM
 
-	InitFunction
+	InitFunction ;pushes all registers
 	push [COF_FileHandle_PARAM]
 	call CloseFile_PROC
-	EndFunction
+	EndFunction ;pops all registers back
+	
 endm
 
 macro DeleteFile DF_FileName_PARAM
 	
-	InitFunction
+	InitFunction ;pushes all registers
 	push offset DF_FileName_PARAM
 	call DeleteFile_PROC
-	EndFunction
+	EndFunction ;pops all registers back
 	
 endm
 
 macro ReadFromFile RFF_FileHandle_PARAM, RFF_BytesToRead_PARAM, RFF_VarToInsertTo_PARAM
 	
-	InitFunction
-	
+	InitFunction ;pushes all registers
 	push [RFF_FileHandle_PARAM]
 	push [RFF_BytesToRead_PARAM]
 	push offset RFF_VarToInsertTo_PARAM
 	call ReadFromFile_PROC
+	EndFunction ;pops all registers back
 	
-	EndFunction
 endm
 
 ;=========== PROCEDURES ========== STABLE, NO DOC 
@@ -89,7 +89,6 @@ CF_Finish_LABEL:
 endp CreateFile_PROC
 
 ;===== Opens existing file for use ===== STABLE, NO DOC
-
 OF_FileNameOffset_VAR equ [bp + 8]
 OF_FileHandleOffset_VAR equ [bp + 6]
 OF_AccessMode_VAR equ [bp + 4]
@@ -139,34 +138,34 @@ WTF_DataToWriteOffset_VAR equ [bp + 4]
 WTF_CharsCounter_VAR equ [bp - 2]
 proc WriteToFile_PROC
 
-	InitBasicProc 2
-	xor di, di
+	InitBasicProc 2 ;prepares to run the procedure
+	xor di, di ;cleans up di
 	
 WTF_DollarSignLoop_LABEL:
 	
-	mov bx, WTF_DataToWriteOffset_VAR
-	mov ah, [bx + di]
-	cmp ah, '$'
-	je WTF_Continue_LABEL
+	mov bx, WTF_DataToWriteOffset_VAR ;saves msg offset
+	mov ah, [bx + di] ;saves the current char into ah
+	cmp ah, '$' ;compares the saved char to a $ sign. if equals it breaks the count
+	je WTF_Continue_LABEL ;continues the write procces
 	
-	inc di
-	jmp WTF_DollarSignLoop_LABEL
+	inc di ;increments the chars to write countes
+	jmp WTF_DollarSignLoop_LABEL ;restarts the check with the next char
 	
 WTF_Continue_LABEL:
 
-	mov ax, di
-	sub ax, 2
-	mov WTF_CharsCounter_VAR, ax
+	mov ax, di ;gets the number of chars
+	sub ax, 1 ;removes ome char to account for the dollar sign
+	mov WTF_CharsCounter_VAR, ax ;moves the actual char number (without dollar) into the local variable
 	
-	mov bx, WTF_FileHandle_VAR
-	mov cx, WTF_CharsCounter_VAR
-	mov dx, WTF_DataToWriteOffset_VAR
-	mov ah, 40h
-	int 21h
+	mov bx, WTF_FileHandle_VAR ;feeds the file handle to the write interrupt
+	mov cx, WTF_CharsCounter_VAR ;feeds the number of chars to write to the write interrupt
+	mov dx, WTF_DataToWriteOffset_VAR ;feeds the starting offset to write to the write interrupt
+	mov ah, 40h ;prepares to run by "selecting the interrupt"
+	int 21h ;calls the chosen interrupt
 	
-	mov ax, WTF_CharsCounter_VAR
-	EndBasicProc 2
-	ret 4
+	mov ax, WTF_CharsCounter_VAR ;passes the number of written chars via ax.
+	EndBasicProc 2 ;cleans up using the library
+	ret 4 ;returns to the rest of the runtime code
 	
 endp WriteToFile_PROC
 
@@ -183,7 +182,7 @@ proc CloseFile_PROC
 	
 endp
 	
-;===== Deletes a file ===== NO DOC, MISSING, NOT STABLE
+;===== Deletes a file =====
 DF_FileNameOffset_VAR equ [bp + 4]
 proc DeleteFile_PROC
 	

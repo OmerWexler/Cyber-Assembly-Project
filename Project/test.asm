@@ -9,8 +9,8 @@ File1H dw ?
 writeLengh dw ?
 readLengh dw 10
 toPrint db 20h dup(0)
-PrintAble db 'Print macro works' 
-toPrint2 db 'abcd'
+PrintAble db 'Print macro works$'
+toPrint2 db 'abcd$'
 
 
 CODESEG
@@ -36,7 +36,7 @@ start:
 	
 ;UtilLIB 1/2
 	;SetCursorPos 0, 14d
-	WaitTime 3
+	;WaitTime 3
 	
 ;BaseLIB 1/1
 	;InitBasicProc 0
@@ -57,17 +57,19 @@ start:
 	
 ;FilesLIB 1/1
 	CreateFile File1, File1H
-	;OpenFile File1, File1H,'b'
+	OpenFile File1, File1H,'b'
+	CloseFile File1H
+	OpenFile File1, File1H,'b'
 	WriteToFile File1H, PrintAble
 	
-	ReadFromFile File1H, readLengh, PrintAble
+	ReadFromFile File1H, readLengh, toPrint
 	
 	Print toPrint
 	
-	;CloseFile File1H
-	;WaitForInput
+	CloseFile File1H
+	WaitForInput
 	
-	;DeleteFile File1
+	DeleteFile File1
 	
 	
 exit:
