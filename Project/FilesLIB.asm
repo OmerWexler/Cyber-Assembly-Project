@@ -1,11 +1,9 @@
-;========== CONSTANTS ========== NO DOC
-buffer db 100d dup(0)
 ;=========== MACROS =========== STABLE, NO DOC
 macro CreateFile CF_FileName_PARAM, CF_FileHandle_PARAM
 	
 	InitFunction ;pushes all registers 
-	push offset CF_FileName_PARAM 
-	push offset CF_FileHandle_PARAM
+	push offset CF_FileName_PARAM ;provides the file name.
+	push offset CF_FileHandle_PARAM ; provides the file handle
 	call CreateFile_PROC
 	EndFunction ;pops all registers back
 	
@@ -104,15 +102,19 @@ proc OpenFile_PROC
 	cmp al, 'b'
 	je OF_SetToBoth_LABEL
 	
-	mov al, 0
-	jmp OF_Continue_LABEL
-	
+	cmp al, 'r'
+	je OF_SetToRead_LABEL
+
 OF_SetToWrite_LABEL:
 	mov al, 1
 	jmp OF_Continue_LABEL
 	
 OF_SetToBoth_LABEL:
 	mov al, 2
+	jmp OF_Continue_LABEL
+	
+OF_SetToRead_LABEL:	
+	mov al, 0
 	jmp OF_Continue_LABEL
 	
 OF_Continue_LABEL: 
@@ -124,11 +126,14 @@ OF_Continue_LABEL:
 	mov bx, OF_FileHandleOffset_VAR
 	mov [bx], ax
 	EndBasicProc 0
-	ret 4
+	jmp OF_End_LABEL
 	
 OF_Error_LABEL:
 	PrintChar 'E'
 	EndBasicProc 0
+	jmp OF_End_LABEL
+	
+OF_End_LABEL:
 	ret 4
 endp OpenFile_PROC
 
@@ -202,7 +207,7 @@ proc ReadFromFile_PROC
 	
 	InitBasicProc 0
 	
-	mov dx, offset buffer
+	mov dx, offset ReadBuffer
 	mov bx, RFF_FileHandle_VAR
 	mov cx, RFF_BytesToRead_VAR
 	mov ah, 3fh
@@ -211,8 +216,9 @@ proc ReadFromFile_PROC
 	xor di, di
 	mov bx, RFF_OffsetToInsertTo_VAR
 	mov cx, RFF_BytesToRead_VAR
-	InsertToTarget:
-		mov al, [buffer + di]
+
+InsertToTarget:
+		mov al, [ReadBuffer + di]
 		mov [bx + di], al
 		
 		inc di
@@ -222,23 +228,3 @@ proc ReadFromFile_PROC
 	ret 6
 	
 endp ReadFromFile_PROC	
-	
-
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-

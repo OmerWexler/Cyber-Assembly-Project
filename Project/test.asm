@@ -4,13 +4,7 @@ STACK 100h
 
 DATASEG
 
-File1 db 'testfile.txt', 0,'$'
-File1H dw ?
-writeLengh dw ?
-readLengh dw 10
-toPrint db 20h dup(0)
-PrintAble db 'Print macro works$'
-toPrint2 db 'abcd$'
+include "Vars.asm"
 
 
 CODESEG

@@ -77,7 +77,7 @@ proc SetCursorPos_PROC
 endp SetCursorPos_PROC
 ;-----------------------------------
 
-WT_TimeInSeconds_VAR equ [bp + 4]
+WT_TimeInSeconds_VAR equ [bp + 4] ;rework
 proc WaitTime_PROC
 
 	InitBasicProc 0
@@ -95,9 +95,3 @@ proc WaitTime_PROC
 	EndBasicProc 0
 	ret 2
 endp WaitTime_PROC
-	
-
-
-
-
-
