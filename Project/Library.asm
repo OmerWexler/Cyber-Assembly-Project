@@ -1,5 +1,0 @@
-include 'BaseLIB.asm'
-include 'FilesLIB.asm'
-include 'UtilLIB.asm'
-include 'InOutLIB.asm'
-include 'GraphLIB.asm'
