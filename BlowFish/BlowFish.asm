@@ -3,6 +3,9 @@ MODEL small
 STACK 100h
 DATASEG
 include 'VarData.asm'
+fileName db 'tester.txt'
+filehandle db ?
+string db 'STRING'
 
 CODESEG
 include 'BaseLIB.asm'
@@ -16,7 +19,7 @@ proc generateKeys_PROC
 	xor si, si
 	
 	mov cx, [keysArrayLength]
-	passwordXorIter:
+	passwordXorWithKeysIter:
 		cmp [password + si], 24h
 		jne skipPasswordReset
 		
@@ -31,7 +34,7 @@ proc generateKeys_PROC
 		inc di
 		inc si
 		
-	loop passwordXorIter
+	loop passwordXorWithKeysIter
 	
 	
 	
@@ -55,8 +58,9 @@ endp BlowFishAlgorithm_PROC
 start:
 	mov ax, @data
 	mov ds, ax
-	call generateKeys_PROC
-	call generateKeys_PROC
+	
+	OpenFile fileName, filehandle, 'b'
+	ReadFromFile filehandle, 65d, string
 exit:
 mov ax, 4C00h
 int 21h

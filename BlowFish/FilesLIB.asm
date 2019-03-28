@@ -207,6 +207,8 @@ proc ReadFromFile_PROC
 	
 	InitBasicProc 0
 	
+	OpenFile tempFileName, tempFileHandle, 'r' 
+	
 	mov dx, offset readBuffer
 	mov bx, RFF_FileHandle_VAR
 	mov cx, RFF_BytesToRead_VAR
@@ -228,3 +230,18 @@ InsertToTarget:
 	ret 6
 	
 endp ReadFromFile_PROC	
+
+;===== Set Temp File Name =====
+STFN_OGFileNameOffset_VAR equ [bp + 2]
+proc SetTempFileName_PROC
+	InitBasicProc 0
+	
+	mov cx, 8d
+	transfer
+	mov bx, STFN_OGFileNameOffset_VAR
+	mov ax, [bx + si] 
+	mov [tempFileName + di], ax
+	
+	EndBasicProc 0
+	ret 2
+endp SetTempFileName_PROC
