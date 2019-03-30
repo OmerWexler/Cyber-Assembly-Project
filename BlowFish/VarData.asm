@@ -11,7 +11,7 @@ password db 'defaultpass$'
 ;===== Files =====
 readBuffer db 256d dup (0)
 fileLength dw 673d
-tempFileHandle dw ?
-tempFileName db '12345678' 
 
-;=====  =====
+;===== File Data =====
+TESTER db 'tester.txt'
+TESTER_HANDLE dw ? 
