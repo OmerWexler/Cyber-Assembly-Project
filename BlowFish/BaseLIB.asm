@@ -60,8 +60,9 @@ macro PrintChar PC_CharToWrite
 	EndFunction
 	
 endm
-;===========PROCEDURES========== STABLE, NO DOC
-; =====Prints from the address at the top of the stack===== STABLE, NO DOC
+
+;=========== PROCEDURES ========== STABLE, NO DOC
+;===== Prints from the address at the top of the stack ===== STABLE, NO DOC
 P_PrintableAdress_VAR equ [bp + 4]
 proc Print_PROC
 	
@@ -89,10 +90,3 @@ proc PrintChar_PROC
 	EndBasicProc 0
 	ret 2
 endp PrintChar_PROC
-	
-	
-	
-	
-	
-
-

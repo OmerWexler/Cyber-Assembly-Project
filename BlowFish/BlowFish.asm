@@ -1,3 +1,7 @@
+macro RunBlowFishALG	
+
+endm RunBlowFishALG
+
 proc BlowFishAlgorithm_PROC
 	
 	InitBasicProc 0
@@ -5,4 +9,4 @@ proc BlowFishAlgorithm_PROC
 	
 	EndBasicProc 0 
 	ret 0
-endp BlowFishAlgorithm_PROC
+endp BlowFishAlgorithm_PROC 
