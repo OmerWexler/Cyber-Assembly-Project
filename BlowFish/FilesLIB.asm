@@ -1,61 +1,61 @@
 ;=========== MACROS =========== STABLE, NO DOC
-macro CreateFile CF_FileName_PARAM, CF_FileHandle_PARAM
+macro createFile CF_FileName_PARAM, CF_FileHandle_PARAM
 	
-	InitFunction ;pushes all registers 
+	initFunction ;pushes all registers 
 	push offset CF_FileName_PARAM ;provides the file name.
 	push offset CF_FileHandle_PARAM ; provides the file handle
-	call CreateFile_PROC
-	EndFunction ;pops all registers back
+	call createFile_PROC
+	endFunction ;pops all registers back
 	
 endm
 	
-macro OpenFile OF_FileName_PARAM, OF_FileHandle_PARAM, OF_AccessMode_PARAM
+macro openFile OF_FileName_PARAM, OF_FileHandle_PARAM, OF_AccessMode_PARAM
 	
-	InitFunction ;pushes all registers
+	initFunction ;pushes all registers
 	push offset OF_FileName_PARAM
 	push offset OF_FileHandle_PARAM
 	push OF_AccessMode_PARAM
-	call OpenFile_PROC
-	EndFunction ;pops all registers back
+	call openFile_PROC
+	endFunction ;pops all registers back
 	
 endm
 
-macro WriteToFile WTF_FileHandle_PARAM, WTF_DataToWrite_PARAM
+macro writeToFile WTF_FileHandle_PARAM, WTF_DataToWrite_PARAM
 
-	InitFunction ;pushes all registers
+	initFunction ;pushes all registers
 	push [WTF_FileHandle_PARAM]
 	push offset WTF_DataToWrite_PARAM
-	call WriteToFile_PROC
-	EndFunction ;pops all registers back
+	call writeToFile_PROC
+	endFunction ;pops all registers back
 	
 endm
 
-macro CloseFile COF_FileHandle_PARAM
+macro closeFile COF_FileHandle_PARAM
 
-	InitFunction ;pushes all registers
+	initFunction ;pushes all registers
 	push [COF_FileHandle_PARAM]
-	call CloseFile_PROC
-	EndFunction ;pops all registers back
+	call closeFile_PROC
+	endFunction ;pops all registers back
 	
 endm
 
 macro DeleteFile DF_FileName_PARAM
 	
-	InitFunction ;pushes all registers
+	initFunction ;pushes all registers
 	push offset DF_FileName_PARAM
 	call DeleteFile_PROC
-	EndFunction ;pops all registers back
+	endFunction ;pops all registers back
 	
 endm
 
-macro ReadFromFile RFF_FileHandle_PARAM, RFF_BytesToRead_PARAM, RFF_VarToInsertTo_PARAM
+macro readFromFile RFF_FileHandle_PARAM, RFF_BytesToRead_PARAM, RFF_VarToInsertTo_PARAM
 	
-	InitFunction ;pushes all registers
+	initFunction ;pushes all registers
 	push [RFF_FileHandle_PARAM]
 	push RFF_BytesToRead_PARAM
 	push offset RFF_VarToInsertTo_PARAM
-	call ReadFromFile_PROC
-	EndFunction ;pops all registers back
+	call readFromFile_PROC
+	endFunction ;pops all registers back
 	
 endm
 
@@ -63,9 +63,9 @@ endm
 ;===== Creates a file with the inserted parameters =====
 CF_FileNameOffset_VAR equ [bp + 6]
 CF_FileHandleOffset_VAR equ [bp + 4]
-proc CreateFile_PROC
+proc createFile_PROC
 	
-	InitBasicProc 0
+	initBasicProc 0
 	
 	mov cx, 0
 	mov dx, CF_FileNameOffset_VAR
@@ -78,21 +78,21 @@ proc CreateFile_PROC
 	jmp CF_Finish_LABEL
 	
 CF_Error_LABEL:
-	PrintChar 'E'
+	printChar 'E'
 	
 CF_Finish_LABEL:
-	EndBasicProc 0
+	endBasicProc 0
 	ret 4
 	
-endp CreateFile_PROC
+endp createFile_PROC
 
 ;===== Opens existing file for use ===== STABLE, NO DOC
 OF_FileNameOffset_VAR equ [bp + 8]
 OF_FileHandleOffset_VAR equ [bp + 6]
 OF_AccessMode_VAR equ [bp + 4]
-proc OpenFile_PROC 
+proc openFile_PROC 
 	
-	InitBasicProc 0 
+	initBasicProc 0 
 	
 	mov al, OF_AccessMode_VAR
 	
@@ -125,25 +125,25 @@ OF_Continue_LABEL:
 	
 	mov bx, OF_FileHandleOffset_VAR
 	mov [bx], ax
-	EndBasicProc 0
+	endBasicProc 0
 	jmp OF_End_LABEL
 	
 OF_Error_LABEL:
-	PrintChar 'E'
-	EndBasicProc 0
+	printChar 'E'
+	endBasicProc 0
 	jmp OF_End_LABEL
 	
 OF_End_LABEL:
 	ret 4
-endp OpenFile_PROC
+endp openFile_PROC
 
 ;===== Writes into an open file ===== STABLE, NO DOC
 WTF_FileHandle_VAR equ [bp + 6]
 WTF_DataToWriteOffset_VAR equ [bp + 4]
 WTF_CharsCounter_VAR equ [bp - 2]
-proc WriteToFile_PROC
+proc writeToFile_PROC
 
-	InitBasicProc 2 ;prepares to run the procedure
+	initBasicProc 2 ;prepares to run the procedure
 	xor di, di ;cleans up di
 	
 WTF_DollarSignLoop_LABEL:
@@ -169,20 +169,20 @@ WTF_Continue_LABEL:
 	int 21h ;calls the chosen interrupt
 	
 	mov ax, WTF_CharsCounter_VAR ;passes the number of written chars via ax.
-	EndBasicProc 2 ;cleans up using the library
+	endBasicProc 2 ;cleans up using the library
 	ret 4 ;returns to the rest of the runtime code
 	
-endp WriteToFile_PROC
+endp writeToFile_PROC
 
 ;===== Closes a file in use ===== STABLE, NO DOC
 COF_FileHandle_VAR equ [bp + 4]
-proc CloseFile_PROC
+proc closeFile_PROC
 	
-	InitBasicProc 0
+	initBasicProc 0
 	mov bx, COF_FileHandle_VAR
 	mov ah, 3Eh
 	int 21h
-	EndBasicProc 0
+	endBasicProc 0
 	ret 2
 	
 endp
@@ -191,21 +191,21 @@ endp
 DF_FileNameOffset_VAR equ [bp + 4]
 proc DeleteFile_PROC
 	
-	InitBasicProc 0
+	initBasicProc 0
 	mov dx, DF_FileNameOffset_VAR
 	mov ah, 41h
 	int 21h
 	
-	EndBasicProc 0
+	endBasicProc 0
 endp
 
 ;===== Reads from a file =====
 RFF_FileHandle_VAR equ [bp + 8]
 RFF_BytesToRead_VAR equ [bp + 6]
 RFF_OffsetToInsertTo_VAR equ [bp + 4]
-proc ReadFromFile_PROC
+proc readFromFile_PROC
 	
-	InitBasicProc 0
+	initBasicProc 0
 		
 	mov dx, offset readBuffer
 	mov bx, RFF_FileHandle_VAR
@@ -224,7 +224,7 @@ InsertToTarget:
 		inc di
 		loop InsertToTarget
 	
-	EndBasicProc 0
+	endBasicProc 0
 	ret 6
 	
-endp ReadFromFile_PROC	
+endp readFromFile_PROC	
