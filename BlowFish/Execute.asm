@@ -18,9 +18,8 @@ start:
 	mov ax, @data
 	mov ds, ax
 
-	
-	mov cx, 0901h
-	push cx
+	allocateKeys
+	generateKeys
 
 exit:
 mov ax, 4C00h

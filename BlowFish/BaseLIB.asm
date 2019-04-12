@@ -1,34 +1,4 @@
 ;=========== MACROS (Support) =========== STABLE, NO DOC
-macro endFunction
-	
-	pop si
-	pop di
-	pop dx
-	pop cx
-	pop bx
-	pop bp
-	
-endm
-
-macro initFunction
-	
-	push bp
-	push bx
-	push cx
-	push dx
-	push di
-	push si
-	
-endm
-
-macro endBasicProc EF_SpOffset
-	
-	add sp, EF_SpOffset
-	pop bp
-	
-	
-endm
-
 macro initBasicProc IF_SpOffset
 	
 	push bp
@@ -37,28 +7,50 @@ macro initBasicProc IF_SpOffset
 	
 endm
 
+macro endBasicProc EF_SpOffset
+	
+	add sp, EF_SpOffset
+	pop bp
+	
+endm
+
+macro pushAll 
+	push ax
+	push bx
+	push cx
+	push dx
+	push si
+	push di
+endm pushAll
+
+macro popAll 
+	pop di
+	pop si
+	pop dx
+	pop cx
+	pop bx
+	pop ax
+endm popAll
 ;=========== MACROS =========== STABLE , NO DOC
 macro print P_printableVariable ;STABLE
 	
-	initFunction
-
+	pushAll
+	
 	mov ax, offset P_printableVariable
 	push ax
 	call print_PROC
 	
-	endFunction
-	
+	popAll
+
 endm
 
 macro printChar PC_CharToWrite
-	
-	initFunction
-	
+	pushAll	
+
 	push PC_CharToWrite
 	call printChar_PROC
 	
-	endFunction
-	
+	popAll
 endm
 
 ;=========== PROCEDURES ========== STABLE, NO DOC

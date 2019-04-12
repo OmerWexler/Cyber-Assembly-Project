@@ -1,32 +1,32 @@
 ;=========== MACROS ===========
-macro PrintBMP PMBP_X, PBMP_Y, PBMP_Name
-	InitFunction
+macro printBMP PMBP_X, PBMP_Y, PBMP_Name
+	
 	
 	push offset PBMP_Name
-	call PBMP_OpenFile_PROC
+	call PBMP_openFile_PROC
 	call PBMP_ReadHeader_PROC
 	call PBMP_ReadPalette_PROC
 	call PBMP_CopyPal_PROC
 	call PBMP_CopyBitmap_PROC
 	
-	EndFunction
+	
 endm
 
 macro SwitchGraphicsMode SGM_DesiredMode_PARAM
 	
-	InitFunction
+	
 	
 	push SGM_DesiredMode_PARAM
 	call SwitchGraphicsMode_PROC
 
-	EndFunction
+	
 endm
 
 macro ClearScreen 
 	
-	InitFunction
+	
 	call ClearScreen_PROC
-	EndFunction
+	
 
 endm
 
@@ -34,12 +34,12 @@ endm
 ;=========== PROCEDURES ==========
 proc ClearScreen_PROC
 
-	InitBasicProc 0
+	initBasicProc 0
 	
 	mov ax, 13h
 	INT 10h
 	
-	EndBasicProc 0
+	endBasicProc 0
 	ret
 	
 endp ClearScreen_PROC
@@ -47,7 +47,7 @@ endp ClearScreen_PROC
 SGM_DesiredMode_VAR equ [bp + 4]
 PROC SwitchGraphicsMode_PROC
 	
-	InitBasicProc 0
+	initBasicProc 0
 	
 	mov ah, SGM_DesiredMode_VAR 
 	
@@ -70,15 +70,15 @@ SGM_Finish_LABEL:
 	mov ah, 0
 	INT 10h
 	
-	EndBasicProc 0
+	endBasicProc 0
 	ret 2
 	
 ENDP SwitchGraphicsMode_PROC
 
 
 OP_NameOffset_VAR equ [bp + 4]
-proc PBMP_OpenFile_PROC
-	InitBasicProc 2
+proc PBMP_openFile_PROC
+	initBasicProc 2
 
 	mov ah, 3Dh
 	xor al, al
@@ -95,14 +95,14 @@ OP_OpenError_LABEL:
 	int 21h
 	
 OP_End_LABEL:
-	EndBasicProc 2
+	endBasicProc 2
 	ret 2
 	
-endp PBMP_OpenFile_PROC
+endp PBMP_openFile_PROC
 
 
 proc PBMP_ReadHeader_PROC
-	InitBasicProc 0
+	initBasicProc 0
 
 	mov ah, 3fh
 	mov bx, [PBMP_TempHandle]
@@ -110,19 +110,19 @@ proc PBMP_ReadHeader_PROC
 	mov dx, offset PBMP_TempHeader
 	int 21h
 	
-	EndBasicProc 0
+	endBasicProc 0
 	ret 0
 endp PBMP_ReadHeader_PROC
 
 proc PBMP_ReadPalette_PROC
-	InitBasicProc 0
+	initBasicProc 0
 	
 	mov ah, 3fh
 	mov cx, 400h
 	mov dx, offset PBMP_TempPallete
 	int 21h
 	
-	EndBasicProc 0
+	endBasicProc 0
 	ret 0
 endp PBMP_ReadPalette_PROC
 
@@ -131,7 +131,7 @@ proc PBMP_CopyPal_PROC
 	; Copy the colors palette to the video memory
 	; The number of the first color should be sent to port 3C8h
 	; The palette is sent to port 3C9h
-	InitBasicProc 0
+	initBasicProc 0
 	
 	mov si,	offset PBMP_TempPallete
 	mov cx,	256
@@ -157,7 +157,7 @@ proc PBMP_CopyPal_PROC
 	; (There is a null chr. after every color.)
 	loop PalLoop
 	
-	EndBasicProc 0
+	endBasicProc 0
 	ret
 endp PBMP_CopyPal_PROC
 
@@ -170,7 +170,7 @@ proc PBMP_CopyBitmap_PROC
 	mov es, ax
 	mov cx, SCREEN_HEIGHT
 	
-PrintBMPLoop:
+printBMPLoop:
 	push cx
 	; di = cx * Width, point to the correct screen line
 	mov di, cx
@@ -194,7 +194,7 @@ PrintBMPLoop:
 	 ;dec cx
      ;loop until cx=0
 	pop cx
-	loop PrintBMPLoop
+	loop printBMPLoop
 	
 	ret
 endp PBMP_CopyBitmap_PROC

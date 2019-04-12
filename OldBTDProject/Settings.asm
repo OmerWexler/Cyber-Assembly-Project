@@ -1,6 +1,6 @@
 ; ===== Game =====
 CurrentScreen db ''
-; ===== BMP Printing =====
+; ===== BMP printing =====
 OPENING_SCREEN_NAME db 'OPSN.bmp', 0
 START_OPTION_OPENING_SCREEN_NAME db 'StrtHigh.bmp', 0
 INFO_OPTION_OPENING_SCREEN_NAME  db 'InfoHigh.bmp', 0

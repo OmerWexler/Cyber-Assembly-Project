@@ -1,61 +1,61 @@
 ;=========== MACROS =========== STABLE, NO DOC
 macro createFile CF_FileName_PARAM, CF_FileHandle_PARAM
 	
-	initFunction ;pushes all registers 
+	pushAll
 	push offset CF_FileName_PARAM ;provides the file name.
 	push offset CF_FileHandle_PARAM ; provides the file handle
 	call createFile_PROC
-	endFunction ;pops all registers back
-	
+	popAll
+
 endm
-	
+
 macro openFile OF_FileName_PARAM, OF_FileHandle_PARAM, OF_AccessMode_PARAM
 	
-	initFunction ;pushes all registers
+	pushAll ;pushes all registers
 	push offset OF_FileName_PARAM
 	push offset OF_FileHandle_PARAM
 	push OF_AccessMode_PARAM
 	call openFile_PROC
-	endFunction ;pops all registers back
+	popAll ;pops all registers back
 	
 endm
 
 macro writeToFile WTF_FileHandle_PARAM, WTF_DataToWrite_PARAM
 
-	initFunction ;pushes all registers
+	pushAll ;pushes all registers
 	push [WTF_FileHandle_PARAM]
 	push offset WTF_DataToWrite_PARAM
 	call writeToFile_PROC
-	endFunction ;pops all registers back
+	popAll ;pops all registers back
 	
 endm
 
 macro closeFile COF_FileHandle_PARAM
 
-	initFunction ;pushes all registers
+	pushAll ;pushes all registers
 	push [COF_FileHandle_PARAM]
 	call closeFile_PROC
-	endFunction ;pops all registers back
+	popAll ;pops all registers back
 	
 endm
 
 macro DeleteFile DF_FileName_PARAM
 	
-	initFunction ;pushes all registers
+	pushAll ;pushes all registers
 	push offset DF_FileName_PARAM
 	call DeleteFile_PROC
-	endFunction ;pops all registers back
+	popAll ;pops all registers back
 	
 endm
 
 macro readFromFile RFF_FileHandle_PARAM, RFF_BytesToRead_PARAM, RFF_VarToInsertTo_PARAM
 	
-	initFunction ;pushes all registers
+	pushAll ;pushes all registers
 	push [RFF_FileHandle_PARAM]
 	push RFF_BytesToRead_PARAM
 	push offset RFF_VarToInsertTo_PARAM
 	call readFromFile_PROC
-	endFunction ;pops all registers back
+	popAll ;pops all registers back
 	
 endm
 

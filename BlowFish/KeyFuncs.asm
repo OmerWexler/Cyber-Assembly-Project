@@ -1,20 +1,25 @@
 ;===== Tranfer Into Key Function =====
 macro transferIntoKey keyID, LowWord, HighWord
-	initFunction
-	
+	pushAll
+
 	push keyID
 	push LowWord
 	push HighWord
 	call transferIntoKey_PROC
-
-	endFunction
+	
+	popAll
 endm transferIntoKey
 
 TIK_key_VAR equ bp + 8
 TIK_LowWord_VAR equ bp + 6
 TIK_HighWord_VAR equ bp + 4
 proc transferIntoKey_PROC 
+	
 	initBasicProc 0
+
+	push dx
+	push di
+	push ax
 
 	xor di, di
 	xor ax, ax
@@ -31,19 +36,21 @@ proc transferIntoKey_PROC
 	mov ax, [TIK_HighWord_VAR]
 	mov [word ptr keys + di + 2d], ax
 
+	pop ax
+	pop di
+	pop dx
+	
 	endBasicProc 0
 	ret 6
 endp transferIntoKey_PROC
 
 ;===== Key Generation =====
 macro generateKeys
-	AllocateKeys
-
-	initFunction
-
-	call generateKeys_PROC
+	pushAll
 	
-	endFunction
+	call generateKeys_PROC
+
+	popAll
 endm generateKeys
 
 proc generateKeys_PROC
@@ -81,39 +88,43 @@ proc generateKeys_PROC
 	mov cx, 18d
 	keyEncryptionWithBlowFish_LABEL:
 		push cx
-
-		runBlowFishALG	
-		readFromDataBlock
+		mov di, cx
 		
-		transferIntoKey cx, bx, ax
-		sub cx, 18d
-		transferIntoKey cx, dx, cx
+		runBlowFishALG	
+		readFromDataBlockBuffer
+		
+		;move into the last key the reversed first 32 bits (and so on for the loop when only the keys change).
+		transferIntoKey di, bx, ax
+		
+		;move into the first key the reversed second 32 bits (and so on for the loop when only the keys change).
+		mov si, 19d
+		sub si, di
+		transferIntoKey si, dx, cx
 		
 		pop cx
-
 	loop keyEncryptionWithBlowFish_LABEL
 
 	endBasicProc 0
 	ret 0
-	
 endp generateKeys_PROC 
 
 ;===== Read Key =====
 macro readFromKey keyID
-	initFunction
-	
+	pushAll
+
 	push keyID
 	call readFromKey_PROC
 
-	endFunction
+	pushAll
 endm readFromKey
 
 RFK_KeyID_VAR equ bp + 4
 proc readFromKey_PROC 
 	initBasicProc 0	
 	
+	push di
+
 	xor di, di
-	xor ax, ax
 
 	mov di, [RFK_KeyID_VAR]
 	dec di
@@ -125,21 +136,21 @@ proc readFromKey_PROC
 	mov ax, [word ptr keys + di]
 	mov dx, [word ptr keys + di + 2d]
 
-	
+	pop di
+
 	endBasicProc 0
-	ret 6
+	ret 2
 endp readFromKey_PROC
 
 ;===== Key Creation =====
-macro AllocateKeys
-	initFunction
+macro allocateKeys
+	
+	call allocateKeys_PROC
+	
+endm allocateKeys
 
-	call AllocateKeys_PROC
-
-	endFunction
-endm AllocateKeys
-
-proc AllocateKeys_PROC
+proc allocateKeys_PROC
+	
 	initBasicProc 0
 
 	;P1
@@ -197,5 +208,5 @@ proc AllocateKeys_PROC
 	transferIntoKey 18, 4081h, 2848h
 
 	endBasicProc 0
-	ret 0
-endp AllocateKeys_PROC
+	ret
+endp allocateKeys_PROC
