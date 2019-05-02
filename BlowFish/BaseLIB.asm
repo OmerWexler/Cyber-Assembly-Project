@@ -31,8 +31,9 @@ macro popAll
 	pop bx
 	pop ax
 endm popAll
-;=========== MACROS =========== STABLE , NO DOC
-macro print P_printableVariable ;STABLE
+
+;===== prints from the address at the top of the stack =====
+macro print P_printableVariable 
 	
 	pushAll
 	
@@ -44,17 +45,6 @@ macro print P_printableVariable ;STABLE
 
 endm
 
-macro printChar PC_CharToWrite
-	pushAll	
-
-	push PC_CharToWrite
-	call printChar_PROC
-	
-	popAll
-endm
-
-;=========== PROCEDURES ========== STABLE, NO DOC
-;===== prints from the address at the top of the stack ===== STABLE, NO DOC
 P_printableAdress_VAR equ [bp + 4]
 proc print_PROC
 	
@@ -68,7 +58,16 @@ proc print_PROC
 	ret 2
 	
 endp print_PROC
-;----------------------------------------------------------
+
+;===== Prints one given char =====
+macro printChar PC_CharToWrite
+	pushAll	
+
+	push PC_CharToWrite
+	call printChar_PROC
+	
+	popAll
+endm
 
 PC_CharToWrite_VAR equ [bp + 4] ; STABLE, NO DOC
 proc printChar_PROC
@@ -82,3 +81,13 @@ proc printChar_PROC
 	endBasicProc 0
 	ret 2
 endp printChar_PROC
+
+;===== Read the system's time =====
+;Hours - ch
+;Minutes - cl
+;Seconds - dh
+;Miliseconds - dl
+macro readSystemTime
+	mov ah, 2ch
+	int 21h
+endm readSystemTime

@@ -1,14 +1,40 @@
-;=========== MACROS =========== STABLE, NO DOC
+;===== Creates a file with the inserted parameters =====
 macro createFile CF_FileName_PARAM, CF_FileHandle_PARAM
 	
 	pushAll
-	push offset CF_FileName_PARAM ;provides the file name.
-	push offset CF_FileHandle_PARAM ; provides the file handle
+	push offset CF_FileName_PARAM
 	call createFile_PROC
+	
+	mov CF_FileHandle_PARAM, ax
 	popAll
 
 endm
 
+CF_FileNameOffset_VAR equ bp + 4
+proc createFile_PROC
+	
+	initBasicProc 0
+	
+	mov cx, 0
+	mov dx, [CF_FileNameOffset_VAR]
+	mov ah, 3ch
+	int 21h
+	jc CF_Error_LABEL
+	
+	;mov bx, [CF_FileHandleOffset_VAR]
+	;mov [bx] , ax
+	jmp CF_Finish_LABEL
+	
+CF_Error_LABEL:
+	printChar 'E'
+	
+CF_Finish_LABEL:
+	endBasicProc 0
+	ret 2
+	
+endp createFile_PROC
+
+;===== Opens existing file for use =====
 macro openFile OF_FileName_PARAM, OF_FileHandle_PARAM, OF_AccessMode_PARAM
 	
 	pushAll ;pushes all registers
@@ -20,73 +46,6 @@ macro openFile OF_FileName_PARAM, OF_FileHandle_PARAM, OF_AccessMode_PARAM
 	
 endm
 
-macro writeToFile WTF_FileHandle_PARAM, WTF_DataToWrite_PARAM
-
-	pushAll ;pushes all registers
-	push [WTF_FileHandle_PARAM]
-	push offset WTF_DataToWrite_PARAM
-	call writeToFile_PROC
-	popAll ;pops all registers back
-	
-endm
-
-macro closeFile COF_FileHandle_PARAM
-
-	pushAll ;pushes all registers
-	push [COF_FileHandle_PARAM]
-	call closeFile_PROC
-	popAll ;pops all registers back
-	
-endm
-
-macro DeleteFile DF_FileName_PARAM
-	
-	pushAll ;pushes all registers
-	push offset DF_FileName_PARAM
-	call DeleteFile_PROC
-	popAll ;pops all registers back
-	
-endm
-
-macro readFromFile RFF_FileHandle_PARAM, RFF_BytesToRead_PARAM, RFF_VarToInsertTo_PARAM
-	
-	pushAll ;pushes all registers
-	push [RFF_FileHandle_PARAM]
-	push RFF_BytesToRead_PARAM
-	push offset RFF_VarToInsertTo_PARAM
-	call readFromFile_PROC
-	popAll ;pops all registers back
-	
-endm
-
-;=========== PROCEDURES ========== STABLE, NO DOC 
-;===== Creates a file with the inserted parameters =====
-CF_FileNameOffset_VAR equ [bp + 6]
-CF_FileHandleOffset_VAR equ [bp + 4]
-proc createFile_PROC
-	
-	initBasicProc 0
-	
-	mov cx, 0
-	mov dx, CF_FileNameOffset_VAR
-	mov ah, 3ch
-	int 21h
-	jc CF_Error_LABEL
-	
-	mov bx, CF_FileHandleOffset_VAR
-	mov [bx] , ax
-	jmp CF_Finish_LABEL
-	
-CF_Error_LABEL:
-	printChar 'E'
-	
-CF_Finish_LABEL:
-	endBasicProc 0
-	ret 4
-	
-endp createFile_PROC
-
-;===== Opens existing file for use ===== STABLE, NO DOC
 OF_FileNameOffset_VAR equ [bp + 8]
 OF_FileHandleOffset_VAR equ [bp + 6]
 OF_AccessMode_VAR equ [bp + 4]
@@ -137,7 +96,17 @@ OF_End_LABEL:
 	ret 4
 endp openFile_PROC
 
-;===== Writes into an open file ===== STABLE, NO DOC
+;===== Writes into an open file =====
+macro writeToFile WTF_FileHandle_PARAM, WTF_DataToWrite_PARAM
+
+	pushAll ;pushes all registers
+	push WTF_FileHandle_PARAM
+	push offset WTF_DataToWrite_PARAM
+	call writeToFile_PROC
+	popAll ;pops all registers back
+	
+endm
+
 WTF_FileHandle_VAR equ [bp + 6]
 WTF_DataToWriteOffset_VAR equ [bp + 4]
 WTF_CharsCounter_VAR equ [bp - 2]
@@ -174,7 +143,16 @@ WTF_Continue_LABEL:
 	
 endp writeToFile_PROC
 
-;===== Closes a file in use ===== STABLE, NO DOC
+;===== Closes a file in use =====
+macro closeFile COF_FileHandle_PARAM
+
+	pushAll ;pushes all registers
+	push COF_FileHandle_PARAM
+	call closeFile_PROC
+	popAll ;pops all registers back
+	
+endm
+
 COF_FileHandle_VAR equ [bp + 4]
 proc closeFile_PROC
 	
@@ -188,6 +166,15 @@ proc closeFile_PROC
 endp
 	
 ;===== Deletes a file =====
+macro DeleteFile DF_FileName_PARAM
+	
+	pushAll ;pushes all registers
+	push offset DF_FileName_PARAM
+	call DeleteFile_PROC
+	popAll ;pops all registers back
+	
+endm
+
 DF_FileNameOffset_VAR equ [bp + 4]
 proc DeleteFile_PROC
 	
@@ -200,6 +187,17 @@ proc DeleteFile_PROC
 endp
 
 ;===== Reads from a file =====
+macro readFromFile RFF_FileHandle_PARAM, RFF_BytesToRead_PARAM, RFF_VarToInsertTo_PARAM
+	
+	pushAll ;pushes all registers
+	push [RFF_FileHandle_PARAM]
+	push RFF_BytesToRead_PARAM
+	push offset RFF_VarToInsertTo_PARAM
+	call readFromFile_PROC
+	popAll ;pops all registers back
+	
+endm
+
 RFF_FileHandle_VAR equ [bp + 8]
 RFF_BytesToRead_VAR equ [bp + 6]
 RFF_OffsetToInsertTo_VAR equ [bp + 4]
@@ -208,7 +206,7 @@ proc readFromFile_PROC
 	initBasicProc 0
 		
 	mov dx, offset readBuffer
-	mov bx, RFF_FileHandle_VAR
+	mov bx, RFF_FileHandle_VAR 
 	mov cx, RFF_BytesToRead_VAR
 	mov ah, 3fh
 	int 21h
@@ -228,3 +226,40 @@ InsertToTarget:
 	ret 6
 	
 endp readFromFile_PROC	
+
+;===== Seek File =====
+macro seekFile fileHandle, originOfMove, lowOffset, highOffset
+	pushAll
+
+	push [fileHandle]
+	push originOfMove
+	push lowOffset
+	push highOffset
+	call SeekFile_PROC
+
+	popAll
+endm seekFile
+
+
+SF_FileHandle_VAR equ  bp + 10
+SF_Origin_Of_Move_VAR equ bp + 8
+SF_Low_Offset_VAR equ bp + 6
+SF_High_Offset_VAR equ bp + 4
+proc seekFile_PROC
+	initBasicProc 0
+
+	mov bx, [SF_FileHandle_VAR]
+	mov al, [SF_Origin_Of_Move_VAR]
+	mov cx, [SF_Low_Offset_VAR]
+	mov cx, [SF_High_Offset_VAR]
+	mov ah, 42h
+	int 21h
+
+	endBasicProc 0
+	ret 0
+endp seekFile_PROC
+
+;===== Custom reset file pointer macro =====
+macro resetCurrentFilePointer
+	seekFile currentFileHandle, 0, 0, 0
+endm resetCurrentFilePointer
