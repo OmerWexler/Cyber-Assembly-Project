@@ -70,6 +70,7 @@ proc allocateFkeys_PROC
     transferIntoKey 'f', 58d, 5565h, 0394h
     transferIntoKey 'f', 59d, 8563h, 5268h
     transferIntoKey 'f', 60d, 2019h, 3854h
+    transferIntoKey 'f', 61d, 1690h, 3538h
     
     endBasicProc 0
     ret 0

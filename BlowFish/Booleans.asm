@@ -123,16 +123,13 @@ endm copyBoolFlag
 
 ;===== Check boolean and jump to correct label =====
 macro checkBoolean boolean, labelToTrue, labelToFalse
-    push ax
 
     mov al, [true]
     cmp boolean, al
-    pop ax
     je labelToTrue
 
     mov al, [false]
     cmp boolean, al
-    pop ax
     je labelToFalse
     
 endm checkBoolFlag

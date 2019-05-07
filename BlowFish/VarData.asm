@@ -32,6 +32,9 @@ FkeysArrayLength dw 240d
 
 ;===== FFunction =====
 currentPasswordIndex dw 0000h
+lowerCaseAIndex dw 1d
+capitalAIndex dw 27d
+number0Index dw 53d
 
 ;===== Boolean ======
 true db 0001h

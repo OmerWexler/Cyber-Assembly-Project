@@ -50,12 +50,15 @@ start:
 	mov ax, @data
 	mov ds, ax
 
-	setCurrentFileToTester
+	;setCurrentFileToTester
+	
+	;initAllKeys
 
-	initAllKeys
-	createDataFile
+	xor bx, bx
+	mov bx, Ascii_9
+	proccesCharacter bx
 
 exit:
 mov ax, 4C00h
 int 21h
-END start
+END start 
