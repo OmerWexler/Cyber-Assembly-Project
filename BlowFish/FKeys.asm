@@ -112,7 +112,7 @@ proc generateFKeys_PROC
     
     loop GFK_passwordXorWithKeysIter_LABEL
 
-    readFromFile currentFileHandle, 200d, readBuffer
+    readFromFile currentFileHandle, [FkeysArrayLength], readBuffer
     
     xor si, si
     xor di, di
@@ -120,7 +120,7 @@ proc generateFKeys_PROC
     mov si, offset readBuffer
     mov di, offset Fkeys
 
-	mov cx, 200d 
+	mov cx, [FkeysArrayLength] 
 	GFK_keyEncryptionWithBlowFish_LABEL:
     
         mov al, [byte ptr si]

@@ -25,13 +25,12 @@ proc createFile_PROC
 	;mov [bx] , ax
 	jmp CF_Finish_LABEL
 	
-CF_Error_LABEL:
-	printChar 'E'
-	
-CF_Finish_LABEL:
-	endBasicProc 0
-	ret 2
-	
+	CF_Error_LABEL:
+		printChar 'E'
+		
+	CF_Finish_LABEL:
+		endBasicProc 0
+		ret 2
 endp createFile_PROC
 
 ;===== Opens existing file for use =====
@@ -128,7 +127,6 @@ WTF_DollarSignLoop_LABEL:
 WTF_Continue_LABEL:
 
 	mov ax, di ;gets the number of chars
-	sub ax, 1 ;removes ome char to account for the dollar sign
 	mov WTF_CharsCounter_VAR, ax ;moves the actual char number (without dollar) into the local variable
 	
 	mov bx, WTF_FileHandle_VAR ;feeds the file handle to the write interrupt
@@ -189,12 +187,10 @@ endp
 ;===== Reads from a file =====
 macro readFromFile RFF_FileHandle_PARAM, RFF_BytesToRead_PARAM, RFF_VarToInsertTo_PARAM
 	
-	pushAll ;pushes all registers
 	push [RFF_FileHandle_PARAM]
 	push RFF_BytesToRead_PARAM
 	push offset RFF_VarToInsertTo_PARAM
 	call readFromFile_PROC
-	popAll ;pops all registers back
 	
 endm
 
@@ -211,6 +207,11 @@ proc readFromFile_PROC
 	mov ah, 3fh
 	int 21h
 	
+	mov [lastReadByteCount], ax
+	
+	compare ax, '==', cx
+	copyBoolFlag [wasLastReadSuccessful]
+
 	xor di, di
 	mov bx, RFF_OffsetToInsertTo_VAR
 	mov cx, RFF_BytesToRead_VAR

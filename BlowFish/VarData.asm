@@ -1,20 +1,16 @@
 ;===== General =====
-dataFileName db '00000000.txt', 0
+dataFileName db 'takeME.txt', 0
 dataFileHandle dw ?
 
+keyWriteBuffer db '0000', 13d, '$'
+
 ;===== PKeys Array =====
-keys dq 18 dup (00000000h)
+PKeys dq 18 dup (00000000h)
 
 keysArrayLength dw 72d
- 
-;===== Zero String =====
-zeroString dw 0000d
 
 ;===== Password =====
 password db 'defaultpass20202$'
-
-;===== Files Library =====
-readBuffer db 256d dup (00h)
 
 ;===== File Related Data =====
 currentFileName db '00000000.00000'
@@ -22,13 +18,13 @@ currentFileNameLength db ?
 currentFileHandle dw ? 
 
 ;===== Blow Fish Algorithm =====
-dataBlockBuffer db '00000000' ;64 BIT 
-LStream dq 00000000h ;32 BIT
-RStream dq 00000000h ;32 BIT
-
+dataBlockBuffer dq 1111111111111111h ;64 BIT 
+LStream         dd 11111111h ;32 BIT
+RStream         dd 11111111h ;32 BIT
+ 
 ;===== FKeys Array =====
-Fkeys dq 60 dup (00000000h)
-FkeysArrayLength dw 240d
+Fkeys dq 62 dup (00000000h)
+FkeysArrayLength dw 248d
 
 ;===== FFunction =====
 currentPasswordIndex dw 0000h
@@ -40,7 +36,24 @@ number0Index dw 53d
 true db 0001h
 false db 0000h
 
-boolFlag db 11d
+boolFlag db 1d
+
+;===== Files Library =====
+readBuffer db 256d dup (00h)
+
+wasLastReadSuccessful db 00d
+lastReadByteCount dw 0000d
+
+; ===== BMP printing =====
+SCREEN_WIDTH equ 320
+SCREEN_HEIGHT equ 200
+
+PBMP_TempHeader db 54 dup (0)
+PBMP_TempPallete db 256 * 4 dup (0)
+PBMP_TempHandle dw ?
+PBMP_ScrLine db SCREEN_WIDTH dup (0)
+PBMP_ErrorMsg db 'Error', 13, 10,'$'
+
 
 ;===== Ascii =====
 Ascii_0 equ 48d
@@ -105,4 +118,5 @@ Ascii_W equ 119d
 Ascii_X equ 120d
 Ascii_Y equ 121d
 Ascii_Z equ 122d
+Ascii_Enter equ 10d
 Ascii_$ equ 36d

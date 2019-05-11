@@ -53,7 +53,7 @@ proc transferIntoKey_PROC
 	je TIK_F_LABEL
 
 TIK_P_LABEL:
-	add di, offset keys
+	add di, offset PKeys
 	jmp TIK_Continue_LABEL
 
 TIK_F_LABEL:
@@ -111,7 +111,7 @@ proc readFromKey_PROC
 	je RFK_F_LABEL
 
 RFK_P_LABEL:
-	add di, offset keys
+	add di, offset PKeys
 	jmp RFK_Continue_LABEL
 
 RFK_F_LABEL:

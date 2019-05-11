@@ -134,6 +134,15 @@ macro checkBoolean boolean, labelToTrue, labelToFalse
     
 endm checkBoolFlag
 
+;===== Check boolean and jump to correct label =====
+macro checkBoolean boolean, labelToTrue
+
+    mov al, [true]
+    cmp boolean, al
+    je labelToTrue
+    
+endm checkBoolFlag
+
 ;===== Check if between =====
 macro checkIfBetween number, lowThresh, highThresh
 

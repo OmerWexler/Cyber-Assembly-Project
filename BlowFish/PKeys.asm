@@ -25,17 +25,17 @@ proc generatePKeys_PROC
 		
 	GPK_skipPasswordReset_LABEL:
 		mov al, [password + si]
-		xor al, [byte ptr keys + di]
+		xor al, [byte ptr PKeys + di]
 		
-		mov [byte ptr keys + di], al
+		mov [byte ptr PKeys + di], al
 		
 		inc di
 		inc si
 		
 	loop GPK_passwordXorWithKeysIter_LABEL
 	
-	;Stage 2 - encrypt the first 64 bits (8 bytes) with the keys 18 times
-	;and replace two keys each time.  
+	;Stage 2 - encrypt the first 64 bits (8 bytes) with the PKeys 18 times
+	;and replace two PKeys each time.  
 	readFromFile currentFileHandle, 8d, dataBlockBuffer
 	
 	mov cx, 18d
@@ -46,10 +46,10 @@ proc generatePKeys_PROC
 		runBlowFishALG	
 		readFromDataBlockBuffer
 		
-		;move into the last key the reversed first 32 bits (and so on for the loop when only the keys change).
+		;move into the last key the reversed first 32 bits (and so on for the loop when only the PKeys change).
 		transferIntoKey 'p', di, bx, ax
 		
-		;move into the first key the reversed second 32 bits (and so on for the loop when only the keys change).
+		;move into the first key the reversed second 32 bits (and so on for the loop when only the PKeys change).
 		mov si, 19d
 		sub si, di
 		transferIntoKey 'p', si, dx, cx

@@ -76,7 +76,6 @@ endp validatePassword_PROC
 ; -Fkeys
 ; -Password
 ; -Password F index
-; -File name
 macro createDataFile
     pushAll
     
@@ -88,28 +87,42 @@ endm createDataFile
 proc createDataFile_PROC
     initBasicProc 0
     
-    mov ah, 2ch
-    int 01Ah
+    ;mov ah, 2ch
+    ;int 01Ah
 
-    xor cx, cx
-    mov cx, 8d
-    CDF_StartNameGeneration_LABEL:
-        push cx
+    ;xor cx, cx
+    ;mov cx, 8d
+    ;CDF_StartNameGeneration_LABEL:
+    ;    push cx
 
-        mov di, offset dataFileName
-        add di, cx
-        dec di
+    ;    mov di, offset dataFileName
+    ;    add di, cx
+    ;    dec di
 
-        readSystemTime
+    ;    readSystemTime
 
-        add dl, Ascii_A
-        mov [byte ptr di], dl
+    ;    add dl, Ascii_A
+    ;    mov [byte ptr di], dl
 
-        pop cx
-    loop CDF_StartNameGeneration_LABEL
+    ;    pop cx
+    ;loop CDF_StartNameGeneration_LABEL
 
     createFile dataFileName, [dataFileHandle]
-     
+    openFile dataFileName, dataFileHandle, 'b'
+
+    mov cx, 18d
+    CDF_PKeysWriteLoop_LABEL:
+        
+        readFromKey 'p', cx
+
+        mov [word ptr keyWriteBuffer], ax  
+        mov [word ptr keyWriteBuffer + 2d], dx  
+
+        writeToFile [dataFileHandle], keyWriteBuffer    
+        loop CDF_PKeysWriteLOop_LABEL
+    
     endBasicProc 0
+
+    mov cx, 62
     ret 0
 endp createDataFile_PROC

@@ -9,10 +9,11 @@ include 'BaseLIB.asm'
 include 'Booleans.asm'
 include 'FilesLIB.asm'
 include 'GenKeys.asm'
+include 'Function.asm'
 include 'BlowFish.asm'
 include 'PKeys.asm'
 include 'FKeys.asm'
-include 'Function.asm'
+include 'Graphics.asm'
 include 'General.asm'
 
 macro initAllKeys 
@@ -20,6 +21,7 @@ macro initAllKeys
 	allocatePKeys
 	allocateFKeys
 
+	setCurrentFileToTester
 	openFile currentFileName, currentFileHandle, 'b' 
 
 	generatePKeys
@@ -50,13 +52,17 @@ start:
 	mov ax, @data
 	mov ds, ax
 
-	;setCurrentFileToTester
-	
 	;initAllKeys
-
-	xor bx, bx
-	mov bx, Ascii_9
-	proccesCharacter bx
+	;createDataFile
+	;createFile dataFileName, [dataFileHandle]
+	;readFromFile currentFileHandle, 8d, dataBlockBuffer
+	;writeToFile [currentFileHandle], keyWriteBuffer
+	
+	allocatePKeys
+	setCurrentFileToTester
+	openFile currentFileName, currentFileHandle, 'b'
+	
+	runBlowFishALG 0
 
 exit:
 mov ax, 4C00h
