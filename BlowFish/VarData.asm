@@ -18,7 +18,7 @@ currentFileNameLength db ?
 currentFileHandle dw ? 
 
 ;===== Blow Fish Algorithm =====
-dataBlockBuffer dq 1111111111111111h ;64 BIT 
+dataBlockBuffer dq 3333333333333333h ;64 BIT 
 LStream         dd 11111111h ;32 BIT
 RStream         dd 11111111h ;32 BIT
  

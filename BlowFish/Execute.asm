@@ -21,9 +21,6 @@ macro initAllKeys
 	allocatePKeys
 	allocateFKeys
 
-	setCurrentFileToTester
-	openFile currentFileName, currentFileHandle, 'b' 
-
 	generatePKeys
 	resetCurrentFilePointer
 
@@ -58,11 +55,12 @@ start:
 	;readFromFile currentFileHandle, 8d, dataBlockBuffer
 	;writeToFile [currentFileHandle], keyWriteBuffer
 	
-	initAllKeys
-	
 	setCurrentFileToTester
 	openFile currentFileName, currentFileHandle, 'b'
 	
+	initAllKeys
+	resetCurrentFilePointer
+
 	; call preapareAlgorithm_PROC
 	; call blowFishAlgorithmEncrypt_PROC
 	; call finishEncryption_PROC

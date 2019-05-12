@@ -1,4 +1,4 @@
-;===== PKeys Generation =====
+צ;===== PKeys Generation =====
 macro generatePKeys
 	pushAll
 	
@@ -35,30 +35,45 @@ proc generatePKeys_PROC
 	loop GPK_passwordXorWithKeysIter_LABEL
 	
 	;Stage 2 - encrypt the first 64 bits (8 bytes) with the PKeys 18 times
-	;and replace two PKeys each time.  
+	;and replace two PKeys each time.  צצ
 	
-	call preapareAlgorithm_PROC
+	prepareAlgorithm
+	add sp, 2 ;To compensate for not taking the variable fron the stack
 
 	mov cx, 18d
 	GPK_keyEncryptionWithBlowFish_LABEL:
 		push cx
 		mov di, cx
 		
-		call blowFishAlgorithmEncrypt_PROC	
-		readFromDataBlockBuffer
+		;Encrypt the new data block and update it from streams
+		call blowFishAlgorithmEncrypt_PROC
+		mov ax, [word ptr LStream]
+		mov [word ptr dataBlockBuffer], ax
 		
+		mov ax, [word ptr LStream + 2d]
+		mov [word ptr dataBlockBuffer + 2d], ax
+		
+		mov ax, [word ptr RStream]
+		mov [word ptr dataBlockBuffer + 4d], ax
+		
+		mov ax, [word ptr RStream + 2d]
+		mov [word ptr dataBlockBuffer + 6d], ax
+
 		;move into the last key the reversed first 32 bits (and so on for the loop when only the PKeys change).
-		transferIntoKey 'p', di, bx, ax
+		mov ax, [word ptr dataBlockBuffer]
+		mov dx, [word ptr dataBlockBuffer + 2d]
+		transferIntoKey 'p', di, dx, ax
 		
 		;move into the first key the reversed second 32 bits (and so on for the loop when only the PKeys change).
 		mov si, 19d
 		sub si, di
-		transferIntoKey 'p', si, dx, cx
+
+		mov ax, [word ptr dataBlockBuffer + 4d]
+		mov dx, [word ptr dataBlockBuffer + 6d]
+		transferIntoKey 'p', si, dx, ax
 		
 		pop cx
 	loop GPK_keyEncryptionWithBlowFish_LABEL
-	
-	call finishEncryption_PROC
 
 	endBasicProc 0
 	ret 0

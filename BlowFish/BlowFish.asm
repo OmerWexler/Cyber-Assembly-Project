@@ -8,33 +8,15 @@ macro runBlowFishALG RBFA_RunType_PARAM
 	popAll
 endm runBlowFishALG
 
-;===== Loops through the correct encryption procedures =====
-ECF_ZerosToDelete_VAR equ bp - 2
-proc encryptCurrentFile_PROC
-	initBasicProc 0
-
-	RBFA_RunLoop_LABEL:
-		sub sp, 2
-		call preapareAlgorithm_PROC
-
-		pop ax 
-		mov [ECF_ZerosToDelete_VAR], ax
-		
-		call blowFishAlgorithmEncrypt_PROC
-		
-		compare [ECF_ZerosToDelete_VAR], '>', 0
-		checkBoolean [boolFlag], RBFA_RemoveZeros_LABEL, RBFA_RunLoop_LABEL
-
-		RBFA_RemoveZeros_LABEL:
-			push [ECF_ZerosToDelete_VAR]
-			call finishEncryption_PROC
-	
-
-	endBasicProc 0
-	ret 0
-endp encryptCurrentFile_PROC
-
 ;===== Gets all the vital data ready for encryption every iteration =====
+;Requires an extra macro for a return value allocation
+macro prepareAlgorithm
+
+	sub sp, 2
+	call preapareAlgorithm_PROC
+
+endm prepareAlgorithm
+
 PA_ReturnValue_VAR equ bp + 4
 PA_ZerosToDelete_VAR equ bp - 2
 proc preapareAlgorithm_PROC
@@ -95,6 +77,32 @@ proc preapareAlgorithm_PROC
 	ret 0	
 endp preapareAlgorithm_PROC
 
+;===== Loops through the correct encryption procedures =====
+ECF_ZerosToDelete_VAR equ bp - 2
+proc encryptCurrentFile_PROC
+	initBasicProc 0
+
+	RBFA_RunLoop_LABEL:
+		prepareAlgorithm
+
+		pop ax 
+		mov [ECF_ZerosToDelete_VAR], ax
+		
+		call blowFishAlgorithmEncrypt_PROC
+		
+		compare [ECF_ZerosToDelete_VAR], '>', 0
+		checkBoolean [boolFlag], RBFA_RemoveZeros_LABEL, RBFA_RunLoop_LABEL
+
+		RBFA_RemoveZeros_LABEL:
+			push [ECF_ZerosToDelete_VAR]
+			call finishEncryption_PROC
+	
+
+	endBasicProc 0
+	ret 0
+endp encryptCurrentFile_PROC
+
+
 ;===== The actual encryption procedure =====
 proc blowFishAlgorithmEncrypt_PROC
 	
@@ -114,7 +122,7 @@ proc blowFishAlgorithmEncrypt_PROC
 			mov [word ptr LStream], ax
 			
 			xor dx, [word ptr LStream + 2d]
-			mov [word ptr LStream + 2d], ax			
+			mov [word ptr LStream + 2d], dx			
 
 			;Run FFunction (that encryptes LStream)
 			FFunction
@@ -154,33 +162,29 @@ FE_ZerosToDelete_VAR equ bp + 4
 proc finishEncryption_PROC
 	initBasicProc 0
 
-	xor ax, ax
-	mov al, [byte ptr LStream + 8d]
-	push ax 
+	mov ax, [word ptr LStream]
+	mov [word ptr dataBlockBuffer], ax
+
+	mov ax, [word ptr LStream + 2d]
+	mov [word ptr dataBlockBuffer + 2d], ax
+
+	mov ax, [word ptr RStream]
+	mov [word ptr dataBlockBuffer + 4d], ax
+
+	mov ax, [word ptr RStream + 2d]
+	mov [word ptr dataBlockBuffer + 6d], ax
 	
 	mov di, 8d
 	sub di, [FE_ZerosToDelete_VAR]
-
-	mov al, Ascii_$
-	mov [byte ptr LStream + di], al
-
-	writeToFile [currentFileHandle], LStream
-
-	pop ax
-	mov [byte ptr LStream + di], al
-
-
+	
 	xor ax, ax
-	mov al, [byte ptr RStream + 8d]
+	mov al, [byte ptr dataBlockBuffer + di]
 	push ax 
 	
 	mov al, Ascii_$
-	mov [byte ptr LStream + di], al
+	mov [byte ptr dataBlockBuffer + di], al
 
-	writeToFile [currentFileHandle], RStream
-
-	pop ax
-	mov [byte ptr RStream + di], al
+	writeToFile [currentFileHandle], dataBlockBuffer
 
 	endBasicProc 0
 	ret 2
