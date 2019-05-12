@@ -59,10 +59,18 @@ start:
 	;writeToFile [currentFileHandle], keyWriteBuffer
 	
 	allocatePKeys
+	allocateFKeys
+
 	setCurrentFileToTester
 	openFile currentFileName, currentFileHandle, 'b'
 	
-	runBlowFishALG 0
+	call preapareAlgorithm_PROC
+	call blowFishAlgorithmEncrypt_PROC
+	
+	resetCurrentFilePointer
+	
+	call preapareAlgorithm_PROC
+	call blowFishAlgorithmEncrypt_PROC
 
 exit:
 mov ax, 4C00h

@@ -191,3 +191,11 @@ CIB_Return_LABEL:
     endBasicProc 0
     ret 6
 endp checkIfBetween_PROC
+
+;===== Set a boolean true or false =====
+macro setBoolean SB_BooleanToSet_PARAM, SB_NewValue_PARAM
+    
+    mov al, SB_NewValue_PARAM
+    mov SB_BooleanToSet_PARAM, al
+
+endm setBoolean
