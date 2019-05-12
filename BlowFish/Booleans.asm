@@ -122,26 +122,17 @@ macro copyBoolFlag booleanVar
 endm copyBoolFlag
 
 ;===== Check boolean and jump to correct label =====
-macro checkBoolean boolean, labelToTrue, labelToFalse
+macro checkBoolean CB_boolean_PARAM, CB_labelToTrue_PARAM, CB_labelToFalse_PARAM
 
     mov al, [true]
-    cmp boolean, al
-    je labelToTrue
+    cmp CB_boolean_PARAM, al
+    je CB_labelToTrue_PARAM
 
     mov al, [false]
-    cmp boolean, al
-    je labelToFalse
-    
-endm checkBoolFlag
+    cmp CB_boolean_PARAM, al
+    je CB_labelToFalse_PARAM 
 
-;===== Check boolean and jump to correct label =====
-macro checkBoolean boolean, labelToTrue
-
-    mov al, [true]
-    cmp boolean, al
-    je labelToTrue
-    
-endm checkBoolFlag
+endm checkBoolean
 
 ;===== Check if between =====
 macro checkIfBetween number, lowThresh, highThresh

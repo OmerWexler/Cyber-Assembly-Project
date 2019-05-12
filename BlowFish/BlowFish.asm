@@ -10,25 +10,33 @@ endm runBlowFishALG
 
 ;===== Loops through the correct encryption procedures =====
 ECF_ZerosToDelete_VAR equ bp - 2
-ECF_WasError_VAR equ bp - 4
 proc encryptCurrentFile_PROC
-	initBasicProc 4
+	initBasicProc 0
 
 	RBFA_RunLoop_LABEL:
-	call preapareAlgorithm_PROC
-	pop [boolFlag]
+		sub sp, 2
+		call preapareAlgorithm_PROC
 
-	call blowFishAlgorithmEncrypt_PROC
+		pop ax 
+		mov [ECF_ZerosToDelete_VAR], ax
+		
+		call blowFishAlgorithmEncrypt_PROC
+		
+		compare [ECF_ZerosToDelete_VAR], '>', 0
+		checkBoolean [boolFlag], RBFA_RemoveZeros_LABEL, RBFA_RunLoop_LABEL
 
+		RBFA_RemoveZeros_LABEL:
+			push [ECF_ZerosToDelete_VAR]
+			call finishEncryption_PROC
+	
 
-	checkBoolean [boolFlag], RBFA_RunLoop_LABEL
-
-	endBasicProc 4
+	endBasicProc 0
 	ret 0
 endp encryptCurrentFile_PROC
 
 ;===== Gets all the vital data ready for encryption every iteration =====
-PA_WasLastRun_VAR equ bp - 2
+PA_ReturnValue_VAR equ bp + 4
+PA_ZerosToDelete_VAR equ bp - 2
 proc preapareAlgorithm_PROC
 	initBasicProc 2
 
@@ -51,31 +59,39 @@ proc preapareAlgorithm_PROC
 
 		mov ax, [word ptr dataBlockBuffer + 6d]
 		mov [word ptr RStream + 2d], ax
+
+		mov ax, 0d
+		mov [PA_ZerosToDelete_VAR], ax
+
 		jmp PA_End_LABEL
 
 	PA_PartialRead_LABEL:
+		
+		mov di, ax
+		
 		compare ax, '==', 0d
 
 		mov dx, 8d
 		sub dx, ax
 
-		mov di, ax
+		mov [PA_ZerosToDelete_VAR], dx
 		mov cx, dx
 		PA_MoveNullZerosIntoBuffer_LABEL:
 			add di, cx
 			dec di
 
 			mov al, 0d
-			mov [byte ptr dataBlockBuffer + di], al 
+			mov [byte ptr dataBlockBuffer + di], al
+			
 			loop PA_MoveNullZerosIntoBuffer_LABEL
-
-			setBoolean [PA_WasLastRun_VAR], [true]
+			
 			jmp PA_End_LABEL 
 
 	PA_End_LABEL:
-	push PA_WasLastRun_VAR
+	mov ax, [PA_ZerosToDelete_VAR]
+	mov [PA_ReturnValue_VAR], ax
 	
-	endBasicProc 0
+	endBasicProc 2
 	ret 0	
 endp preapareAlgorithm_PROC
 
@@ -127,15 +143,45 @@ proc blowFishAlgorithmEncrypt_PROC
 
 			;Repeat.
 			pop cx
-			
-			loop BFAE_EncryptionLoop_LABEL
+		loop BFAE_EncryptionLoop_LABEL
 	
 	endBasicProc 0 
-	ret
+	ret 0
 endp blowFishAlgorithmEncrypt_PROC 
 
 ;===== Writes to the file the last bytes and deletes the null zeroes from the end of it (if there is any) =====
+FE_ZerosToDelete_VAR equ bp + 4
 proc finishEncryption_PROC
+	initBasicProc 0
 
+	xor ax, ax
+	mov al, [byte ptr LStream + 8d]
+	push ax 
 	
+	mov di, 8d
+	sub di, [FE_ZerosToDelete_VAR]
+
+	mov al, Ascii_$
+	mov [byte ptr LStream + di], al
+
+	writeToFile [currentFileHandle], LStream
+
+	pop ax
+	mov [byte ptr LStream + di], al
+
+
+	xor ax, ax
+	mov al, [byte ptr RStream + 8d]
+	push ax 
+	
+	mov al, Ascii_$
+	mov [byte ptr LStream + di], al
+
+	writeToFile [currentFileHandle], RStream
+
+	pop ax
+	mov [byte ptr RStream + di], al
+
+	endBasicProc 0
+	ret 2
 endp finishEncryption_PROC

@@ -216,12 +216,12 @@ proc readFromFile_PROC
 	mov bx, RFF_OffsetToInsertTo_VAR
 	mov cx, RFF_BytesToRead_VAR
 
-InsertToTarget:
+	InsertToTarget:
 		mov al, [readBuffer + di]
 		mov [bx + di], al
 		
 		inc di
-		loop InsertToTarget
+	loop InsertToTarget
 	
 	endBasicProc 0
 	ret 6

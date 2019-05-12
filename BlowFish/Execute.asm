@@ -58,20 +58,20 @@ start:
 	;readFromFile currentFileHandle, 8d, dataBlockBuffer
 	;writeToFile [currentFileHandle], keyWriteBuffer
 	
-	allocatePKeys
-	allocateFKeys
-
+	initAllKeys
+	
 	setCurrentFileToTester
 	openFile currentFileName, currentFileHandle, 'b'
 	
-	call preapareAlgorithm_PROC
-	call blowFishAlgorithmEncrypt_PROC
+	; call preapareAlgorithm_PROC
+	; call blowFishAlgorithmEncrypt_PROC
+	; call finishEncryption_PROC
 	
-	resetCurrentFilePointer
+	; call preapareAlgorithm_PROC
+	; call blowFishAlgorithmEncrypt_PROC
+	;call finishEncryption_PROC
 	
-	call preapareAlgorithm_PROC
-	call blowFishAlgorithmEncrypt_PROC
-
+	call encryptCurrentFile_PROC
 exit:
 mov ax, 4C00h
 int 21h

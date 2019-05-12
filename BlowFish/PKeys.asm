@@ -36,14 +36,15 @@ proc generatePKeys_PROC
 	
 	;Stage 2 - encrypt the first 64 bits (8 bytes) with the PKeys 18 times
 	;and replace two PKeys each time.  
-	readFromFile currentFileHandle, 8d, dataBlockBuffer
 	
+	call preapareAlgorithm_PROC
+
 	mov cx, 18d
 	GPK_keyEncryptionWithBlowFish_LABEL:
 		push cx
 		mov di, cx
 		
-		runBlowFishALG	
+		call blowFishAlgorithmEncrypt_PROC	
 		readFromDataBlockBuffer
 		
 		;move into the last key the reversed first 32 bits (and so on for the loop when only the PKeys change).
@@ -57,6 +58,8 @@ proc generatePKeys_PROC
 		pop cx
 	loop GPK_keyEncryptionWithBlowFish_LABEL
 	
+	call finishEncryption_PROC
+
 	endBasicProc 0
 	ret 0
 endp generatePKeys_PROC 
