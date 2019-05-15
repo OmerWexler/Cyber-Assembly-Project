@@ -1,6 +1,9 @@
 ;===== General =====
-dataFileName db 'takeME.txt', 0
+dataFileName db 'datafile.txt', 0
 dataFileHandle dw ?
+
+encryptedFileName db 'encrypte.txt', 0
+encryptFileHandle dw ?
 
 keyWriteBuffer db '0000', 13d, '$'
 
@@ -15,7 +18,9 @@ password db 'defaultpass20202$'
 ;===== File Related Data =====
 currentFileName db '00000000.00000'
 currentFileNameLength db ? 
-currentFileHandle dw ? 
+currentFileHandle dw 0000d 
+writeIndex dw 0000d
+readIndex dw 0000d
 
 ;===== Blow Fish Algorithm =====
 dataBlockBuffer dq 3333333333333333h ;64 BIT 
@@ -40,9 +45,6 @@ boolFlag db 1d
 
 ;===== Files Library =====
 readBuffer db 256d dup (00h)
-
-wasLastReadSuccessful db 00d
-lastReadByteCount dw 0000d
 
 ; ===== BMP printing =====
 SCREEN_WIDTH equ 320

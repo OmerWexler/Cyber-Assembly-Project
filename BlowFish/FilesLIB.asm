@@ -98,11 +98,21 @@ endp openFile_PROC
 ;===== Writes into an open file =====
 macro writeToFile WTF_FileHandle_PARAM, WTF_DataToWrite_PARAM
 
-	pushAll ;pushes all registers
+	push bx
+	push cx
+	push dx
+	push di
+	push si
+
 	push WTF_FileHandle_PARAM
 	push offset WTF_DataToWrite_PARAM
 	call writeToFile_PROC
-	popAll ;pops all registers back
+
+	pop si
+	pop di
+	pop dx
+	pop cx
+	pop bx
 	
 endm
 
@@ -206,16 +216,12 @@ proc readFromFile_PROC
 	mov cx, RFF_BytesToRead_VAR
 	mov ah, 3fh
 	int 21h
-	
-	mov [lastReadByteCount], ax
-	
-	compare ax, '==', cx
-	copyBoolFlag [wasLastReadSuccessful]
+
+	push ax
 
 	xor di, di
 	mov bx, RFF_OffsetToInsertTo_VAR
 	mov cx, RFF_BytesToRead_VAR
-
 	InsertToTarget:
 		mov al, [readBuffer + di]
 		mov [bx + di], al
@@ -223,6 +229,8 @@ proc readFromFile_PROC
 		inc di
 	loop InsertToTarget
 	
+	pop ax
+
 	endBasicProc 0
 	ret 6
 	
@@ -232,7 +240,7 @@ endp readFromFile_PROC
 macro seekFile fileHandle, originOfMove, lowOffset, highOffset
 	pushAll
 
-	push [fileHandle]
+	push fileHandle
 	push originOfMove
 	push lowOffset
 	push highOffset
@@ -252,15 +260,15 @@ proc seekFile_PROC
 	mov bx, [SF_FileHandle_VAR]
 	mov al, [SF_Origin_Of_Move_VAR]
 	mov cx, [SF_Low_Offset_VAR]
-	mov cx, [SF_High_Offset_VAR]
+	mov dx, [SF_High_Offset_VAR]
 	mov ah, 42h
 	int 21h
 
 	endBasicProc 0
-	ret 0
+	ret 8
 endp seekFile_PROC
 
 ;===== Custom reset file pointer macro =====
 macro resetCurrentFilePointer
-	seekFile currentFileHandle, 0, 0, 0
+	seekFile [currentFileHandle], 0, 0, 0
 endm resetCurrentFilePointer

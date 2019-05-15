@@ -57,18 +57,19 @@ start:
 	
 	setCurrentFileToTester
 	openFile currentFileName, currentFileHandle, 'b'
-	
+
 	initAllKeys
 	resetCurrentFilePointer
 
-	; call preapareAlgorithm_PROC
 	; call blowFishAlgorithmEncrypt_PROC
 	; call finishEncryption_PROC
 	
 	; call preapareAlgorithm_PROC
 	; call blowFishAlgorithmEncrypt_PROC
 	;call finishEncryption_PROC
-	
+	mov al, 0
+	mov ah, 0
+	int 10h
 	call encryptCurrentFile_PROC
 exit:
 mov ax, 4C00h
