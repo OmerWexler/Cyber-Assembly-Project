@@ -22,24 +22,12 @@ proc preapareAlgorithm_PROC
 	initBasicProc 0
 
 	readFromFile currentFileHandle, 8d, dataBlockBuffer
+	; add [readIndex], ax 
 
 	mov [PA_CharacterRead_VAR], ax
-
-	compare ax,'==', 8d
-	checkBoolean [boolFlag], PA_TransferIntoDataBlock_LABEL, PA_RetryRead_LABEL
-
-	PA_RetryRead_LABEL:
-		mov ax, [PA_CharacterRead_VAR]
-		mov dx, 8
-		sub dx, ax
-
-		readFromFile currentFileHandle, dx, dataBlockBuffer		
-
-
-		
-
-	PA_TransferIntoDataBlock_LABEL:
+	
 	;Transfer the new data into the two streams.	
+	PA_TransferIntoDataBlock_LABEL:
 		mov ax, [word ptr dataBlockBuffer]
 		mov [word ptr LStream], ax
 		
@@ -58,29 +46,13 @@ endp preapareAlgorithm_PROC
 
 ;===== Loops through the correct encryption procedures =====
 proc encryptCurrentFile_PROC
-	initBasicProc 2
+	initBasicProc 0
 
 	createFile encryptedFileName, [encryptFileHandle]
 
-	RBFA_RunLoop_LABEL:	
+	call iterAlgoritm_PROC
 
-		prepareAlgorithm ;the zeroes to delete is now inside the stack
-
-		call blowFishAlgorithmEncrypt_PROC
-		
-		pop ax
-		compare ax, '==', 8d
-		push ax
-		
-		call finishEncryption_PROC
-		add sp, 2
-
-		checkBoolean [boolFlag], RBFA_RunLoop_LABEL, RBFA_Exit_LABEL
-
-	RBFA_Exit_LABEL:
-		
-		; deleteFile encryptedFileName
-	endBasicProc 2
+	endBasicProc 0
 	ret 0
 endp encryptCurrentFile_PROC
 
@@ -167,7 +139,8 @@ proc finishEncryption_PROC
 	mov [byte ptr dataBlockBuffer + di], al
 
 	writeToFile [encryptFileHandle], dataBlockBuffer
-	
+	; add [writeIndex], ax
+
 	mov [FE_ActionCharacters_VAR], ax
 
 	pop ax
@@ -176,3 +149,26 @@ proc finishEncryption_PROC
 	endBasicProc 0
 	ret 0 ;zero because there is a return value in the stack
 endp finishEncryption_PROC
+
+;description
+proc iterAlgoritm_PROC
+
+	prepareAlgorithm ;the zeroes to delete is now inside the stack
+
+	call blowFishAlgorithmEncrypt_PROC
+
+	pop ax
+	compare ax, '==', 8d
+	push ax
+
+	call finishEncryption_PROC
+	add sp, 2
+
+	checkBoolean [boolFlag], IA_Recall_LABEL, IA_Exit_LABEL
+
+	IA_Recall_LABEL:
+		call iterAlgoritm_PROC
+	
+	IA_Exit_LABEL:
+	ret 0
+endp iterAlgoritm_PROC

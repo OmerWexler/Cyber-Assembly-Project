@@ -83,16 +83,15 @@ OF_Continue_LABEL:
 	
 	mov bx, OF_FileHandleOffset_VAR
 	mov [bx], ax
-	endBasicProc 0
 	jmp OF_End_LABEL
 	
 OF_Error_LABEL:
 	printChar 'E'
-	endBasicProc 0
 	jmp OF_End_LABEL
 	
 OF_End_LABEL:
-	ret 4
+	endBasicProc 0
+	ret 6
 endp openFile_PROC
 
 ;===== Writes into an open file =====

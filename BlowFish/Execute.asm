@@ -67,9 +67,10 @@ start:
 	; call preapareAlgorithm_PROC
 	; call blowFishAlgorithmEncrypt_PROC
 	;call finishEncryption_PROC
-	mov al, 0
-	mov ah, 0
-	int 10h
+	
+	mov [readIndex], 0d
+	mov [writeIndex], 0d
+
 	call encryptCurrentFile_PROC
 exit:
 mov ax, 4C00h
