@@ -1,36 +1,29 @@
-;===== General =====
-dataFileName db 'datafile.txt', 0
-dataFileHandle dw ?
-
-encryptedFileName db 'encrypte.txt', 0
-encryptFileHandle dw ?
-
-decryptedFileName db 'decrypte.txt', 0
-decryptFileHandle dw ?
-
-keyWriteBuffer db '0000', 13d, '$'
-
 ;===== PKeys Array =====
 PKeys dq 18 dup (00000000h)
-
 keysArrayLength dw 72d
 
 ;===== Password =====
 password db 'defaultpass20202$'
 
 ;===== File Related Data =====
-currentFileName db '00000000.00000'
-currentFileNameLength db ? 
-currentFileHandle dw 0000d 
-writeIndex dw 1234d, '$'
-readIndex dw 0000d, '$'
-index dw 0000d, '$'
-index2 dw 0000d, '$'
+currentReadFileName db '00000000.00000'
+currentReadFileHandle dw ?
+
+currentWriteFileName db '00000000.00000'
+currentWriteFileHandle dw ?
+
+dataFileName db 'datafile.txt', 0
+
+encryptedFileName db 'encrypte.txt', 0
+
+decryptedFileName db 'decrypte.txt', 0
 
 ;===== Blow Fish Algorithm =====
 dataBlockBuffer dq 3333333333333333h ;64 BIT 
 LStream         dd 11111111h ;32 BIT
 RStream         dd 11111111h ;32 BIT
+
+runMode dw 0000d
  
 ;===== FKeys Array =====
 Fkeys dq 62 dup (00000000h)
@@ -50,6 +43,7 @@ boolFlag db 1d
 
 ;===== Files Library =====
 readBuffer db 256d dup (00h)
+writeBuffer db 256d dup (00h)
 
 ; ===== BMP printing =====
 SCREEN_WIDTH equ 320

@@ -1,8 +1,12 @@
-צ;===== PKeys Generation =====
+;===== PKeys Generation =====
 macro generatePKeys
 	pushAll
 	
+	openFile currentReadFileName, currentReadFileHandle, 'r' 
+
 	call generatePKeys_PROC
+
+	closeFile [currentReadFileHandle]
 
 	popAll
 endm generatePKeys
@@ -35,7 +39,7 @@ proc generatePKeys_PROC
 	loop GPK_passwordXorWithKeysIter_LABEL
 	
 	;Stage 2 - encrypt the first 64 bits (8 bytes) with the PKeys 18 times
-	;and replace two PKeys each time.  צצ
+	;and replace two PKeys each time.
 	
 	prepareAlgorithm
 	add sp, 2 ;To compensate for not taking the variable fron the stack

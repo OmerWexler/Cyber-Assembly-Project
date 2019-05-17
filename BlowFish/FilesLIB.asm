@@ -94,62 +94,6 @@ OF_End_LABEL:
 	ret 6
 endp openFile_PROC
 
-;===== Writes into an open file =====
-macro writeToFile WTF_FileHandle_PARAM, WTF_DataToWrite_PARAM
-
-	push bx
-	push cx
-	push dx
-	push di
-	push si
-
-	push WTF_FileHandle_PARAM
-	push offset WTF_DataToWrite_PARAM
-	call writeToFile_PROC
-
-	pop si
-	pop di
-	pop dx
-	pop cx
-	pop bx
-	
-endm
-
-WTF_FileHandle_VAR equ [bp + 6]
-WTF_DataToWriteOffset_VAR equ [bp + 4]
-WTF_CharsCounter_VAR equ [bp - 2]
-proc writeToFile_PROC
-
-	initBasicProc 2 ;prepares to run the procedure
-	xor di, di ;cleans up di
-	
-WTF_DollarSignLoop_LABEL:
-	
-	mov bx, WTF_DataToWriteOffset_VAR ;saves msg offset
-	mov ah, [bx + di] ;saves the current char into ah
-	cmp ah, '$' ;compares the saved char to a $ sign. if equals it breaks the count
-	je WTF_Continue_LABEL ;continues the write procces
-	
-	inc di ;increments the chars to write countes
-	jmp WTF_DollarSignLoop_LABEL ;restarts the check with the next char
-	
-WTF_Continue_LABEL:
-
-	mov ax, di ;gets the number of chars
-	mov WTF_CharsCounter_VAR, ax ;moves the actual char number (without dollar) into the local variable
-	
-	mov bx, WTF_FileHandle_VAR ;feeds the file handle to the write interrupt
-	mov cx, WTF_CharsCounter_VAR ;feeds the number of chars to write to the write interrupt
-	mov dx, WTF_DataToWriteOffset_VAR ;feeds the starting offset to write to the write interrupt
-	mov ah, 40h ;prepares to run by "selecting the interrupt"
-	int 21h ;calls the chosen interrupt
-	
-	mov ax, WTF_CharsCounter_VAR ;passes the number of written chars via ax.
-	endBasicProc 2 ;cleans up using the library
-	ret 4 ;returns to the rest of the runtime code
-	
-endp writeToFile_PROC
-
 ;===== Closes a file in use =====
 macro closeFile COF_FileHandle_PARAM
 
@@ -267,21 +211,21 @@ proc seekFile_PROC
 	ret 8
 endp seekFile_PROC
 
-macro writeToFileUsingLength WTFUL_FileHandle_PARAM, WTFUL_BytesToWrite_PARAM, WTFUL_DataToWrite_PARAM
+macro writeToFile WTFUL_FileHandle_PARAM, WTFUL_BytesToWrite_PARAM, WTFUL_DataToWrite_PARAM
 	pushAll
 
 	push WTFUL_FileHandle_PARAM
 	push WTFUL_BytesToWrite_PARAM
 	push offset WTFUL_DataToWrite_PARAM
-	call writeToFileUsingLength_PROC
+	call writeToFile_PROC
 
 	popAll
-endm writeToFileUsingLength
+endm writeToFile
 
 WTFUL_FileHandle_VAR equ bp + 8
 WTFUL_BytesToWrite_VAR equ bp + 6
 WTFUL_DataToWrite_VAR equ bp + 4
-proc writeToFileUsingLength_PROC
+proc writeToFile_PROC
 	initBasicProc 0
 
 	mov bx, [WTFUL_FileHandle_VAR] 
@@ -300,10 +244,10 @@ proc writeToFileUsingLength_PROC
 	WTFUL_Exit_LABEL:
 		endBasicProc 0
 		ret 6
-endp writeToFileUsingLength_PROC
+endp writeToFile_PROC
 
 
 ;===== Custom reset file pointer macro =====
-macro resetCurrentFilePointer
-	seekFile [currentFileHandle], 0, 0, 0
-endm resetCurrentFilePointer
+macro resetCurrentReadFilePointer
+	seekFile [currentReadFileHandle], 0, 0, 0
+endm resetCurrentReadFilePointer

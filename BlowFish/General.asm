@@ -75,7 +75,6 @@ endp validatePassword_PROC
 ; -Pkeys
 ; -Fkeys
 ; -Password
-; -Password F index
 macro createDataFile
     pushAll
     
@@ -86,43 +85,33 @@ endm createDataFile
 
 proc createDataFile_PROC
     initBasicProc 0
-    
-    ;mov ah, 2ch
-    ;int 01Ah
 
-    ;xor cx, cx
-    ;mov cx, 8d
-    ;CDF_StartNameGeneration_LABEL:
-    ;    push cx
-
-    ;    mov di, offset dataFileName
-    ;    add di, cx
-    ;    dec di
-
-    ;    readSystemTime
-
-    ;    add dl, Ascii_A
-    ;    mov [byte ptr di], dl
-
-    ;    pop cx
-    ;loop CDF_StartNameGeneration_LABEL
-
-    createFile dataFileName, [dataFileHandle]
-    openFile dataFileName, dataFileHandle, 'b'
+    createFile dataFileName, [currentWriteFileHandle]
 
     mov cx, 18d
     CDF_PKeysWriteLoop_LABEL:
         
         readFromKey 'p', cx
 
-        mov [word ptr keyWriteBuffer], ax  
-        mov [word ptr keyWriteBuffer + 2d], dx  
+        mov [word ptr writeBuffer], ax  
+        mov [word ptr writeBuffer + 2d], dx  
 
-        writeToFile [dataFileHandle], keyWriteBuffer    
+        writeToFile [currentWriteFileHandle], 8d, writeBuffer
         loop CDF_PKeysWriteLOop_LABEL
     
-    endBasicProc 0
-
     mov cx, 62
+    CDF_FKeysWriteLoop_LABEL:
+        readFromKey 'f', cx
+
+        mov [word ptr writeBuffer], ax  
+        mov [word ptr writeBuffer + 2d], dx  
+
+        writeToFile [currentWriteFileHandle], 8d, writeBuffer    
+        loop CDF_FKeysWriteLoop_LABEL
+
+     
+    
+    ;add a close file statement for data file
+    endBasicProc 0
     ret 0
 endp createDataFile_PROC

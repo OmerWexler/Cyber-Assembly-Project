@@ -112,7 +112,7 @@ proc generateFKeys_PROC
     
     loop GFK_passwordXorWithKeysIter_LABEL
 
-    readFromFile currentFileHandle, [FkeysArrayLength], readBuffer
+    readFromFile currentReadFileHandle, [FkeysArrayLength], readBuffer
     
     xor si, si
     xor di, di

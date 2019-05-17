@@ -1,13 +1,14 @@
 ;=========== MACROS ===========
-macro printBMP PBMP_Name
+macro printBMP PBMP_Name_PARAM
 	
 	
-	push offset PBMP_Name
+	push offset PBMP_Name_PARAM
 	call PBMP_openFile_PROC
 	call PBMP_ReadHeader_PROC
 	call PBMP_ReadPalette_PROC
 	call PBMP_CopyPal_PROC
 	call PBMP_CopyBitmap_PROC
+	;add a close file statement for PBMP_Name_PARAM
 	
 	
 endm
