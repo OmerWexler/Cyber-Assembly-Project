@@ -56,7 +56,6 @@ proc print_PROC
 	
 	endBasicProc 0
 	ret 2
-	
 endp print_PROC
 
 ;===== Prints one given char =====

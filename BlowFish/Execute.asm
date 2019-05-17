@@ -10,7 +10,8 @@ include 'Booleans.asm'
 include 'FilesLIB.asm'
 include 'GenKeys.asm'
 include 'Function.asm'
-include 'BlowFish.asm'
+include 'Encrypt.asm'
+include 'Decrypt.asm'
 include 'PKeys.asm'
 include 'FKeys.asm'
 include 'Graphics.asm'
@@ -45,6 +46,24 @@ macro setCurrentFileToTester
 	mov [currentFileNameLength], 10d
 endm setCurrentFileToTester
 
+macro setCurrentFileToENCRYPTE
+	mov [currentFileName + 0], 'E'
+	mov [currentFileName + 1], 'N'
+	mov [currentFileName + 2], 'C'
+	mov [currentFileName + 3], 'R'
+	mov [currentFileName + 4], 'Y'
+	mov [currentFileName + 5], 'P'
+	mov [currentFileName + 6], 'T'
+	mov [currentFileName + 7], 'E'
+	mov [currentFileName + 8], '.'
+	mov [currentFileName + 9], 't'
+	mov [currentFileName + 10], 'x'
+	mov [currentFileName + 11], 't'
+	mov [currentFileName + 12], 0
+
+	mov [currentFileNameLength], 11d
+endm setCurrentFileToENCRYPTE
+
 start:
 	mov ax, @data
 	mov ds, ax
@@ -57,7 +76,8 @@ start:
 	
 	setCurrentFileToTester
 	openFile currentFileName, currentFileHandle, 'b'
-
+	writeToFileUsingLength [currentFileHandle], 10, writeIndex
+	
 	initAllKeys
 	resetCurrentFilePointer
 
@@ -72,6 +92,8 @@ start:
 	mov [writeIndex], 0d
 
 	call encryptCurrentFile_PROC
+
+	;mov [currentPasswordIndex], 0d
 exit:
 mov ax, 4C00h
 int 21h

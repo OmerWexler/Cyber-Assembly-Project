@@ -267,6 +267,42 @@ proc seekFile_PROC
 	ret 8
 endp seekFile_PROC
 
+macro writeToFileUsingLength WTFUL_FileHandle_PARAM, WTFUL_BytesToWrite_PARAM, WTFUL_DataToWrite_PARAM
+	pushAll
+
+	push WTFUL_FileHandle_PARAM
+	push WTFUL_BytesToWrite_PARAM
+	push offset WTFUL_DataToWrite_PARAM
+	call writeToFileUsingLength_PROC
+
+	popAll
+endm writeToFileUsingLength
+
+WTFUL_FileHandle_VAR equ bp + 8
+WTFUL_BytesToWrite_VAR equ bp + 6
+WTFUL_DataToWrite_VAR equ bp + 4
+proc writeToFileUsingLength_PROC
+	initBasicProc 0
+
+	mov bx, [WTFUL_FileHandle_VAR] 
+	mov cx, [WTFUL_BytesToWrite_VAR]  
+	lea dx, [WTFUL_DataToWrite_VAR]
+	mov ah, 40h 
+	int 21h 
+	
+	jc WTFUL_Error_LABEL
+	jmp WTFUL_Exit_LABEL
+
+	WTFUL_Error_LABEL:
+		printChar 'E'
+		jmp WTFUL_Exit_LABEL
+	
+	WTFUL_Exit_LABEL:
+		endBasicProc 0
+		ret 6
+endp writeToFileUsingLength_PROC
+
+
 ;===== Custom reset file pointer macro =====
 macro resetCurrentFilePointer
 	seekFile [currentFileHandle], 0, 0, 0

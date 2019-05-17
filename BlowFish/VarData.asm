@@ -5,6 +5,9 @@ dataFileHandle dw ?
 encryptedFileName db 'encrypte.txt', 0
 encryptFileHandle dw ?
 
+decryptedFileName db 'decrypte.txt', 0
+decryptFileHandle dw ?
+
 keyWriteBuffer db '0000', 13d, '$'
 
 ;===== PKeys Array =====
@@ -19,8 +22,10 @@ password db 'defaultpass20202$'
 currentFileName db '00000000.00000'
 currentFileNameLength db ? 
 currentFileHandle dw 0000d 
-writeIndex dw 0000d
-readIndex dw 0000d
+writeIndex dw 1234d, '$'
+readIndex dw 0000d, '$'
+index dw 0000d, '$'
+index2 dw 0000d, '$'
 
 ;===== Blow Fish Algorithm =====
 dataBlockBuffer dq 3333333333333333h ;64 BIT 
