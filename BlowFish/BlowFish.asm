@@ -190,28 +190,6 @@ proc finishEncryption_PROC
 	ret 0 ;zero because there is a return value in the stack
 endp finishEncryption_PROC
 
-;===== Create data file if needed =====
-proc validateDataFile
-	
-	compare [runMode], '==', 'E'
-	checkBoolean [boolFlag], VDF_Create_LABEL, VDF_CheckIfDecryption_LABEL
-
-	VDF_CheckIfDecryption_LABEL:
-		compare [runMode], '==', 'D'
-		checkBoolean [boolFlag], VDF_Delete_LABEL, VDF_Exit_LABEL
-
-	VDF_Create_LABEL:
-		createDataFile
-		jmp VDF_Exit_LABEL
-
-	VDF_Delete_LABEL:
-		deleteFile dataFileName
-		jmp VDF_Exit_LABEL
-
-	VDF_Exit_LABEL:
-	ret 0
-endp validateDataFile
-
 ;===== A recursive procedure that runs the full algorithm loop =====
 proc iterAlgoritm_PROC
 
@@ -265,18 +243,15 @@ endm runAlgorithm
 
 proc runAlgorithm_PROC 
 	initBasicProc 0
-
+	
 	call createNewReturnFile_PROC
 	openFile currentReadFileName, currentReadFileHandle, 'r'
 
 	call iterAlgoritm_PROC
 
-	call validateDataFile
-
 	closeFile [currentReadFileHandle]
 	closeFile [currentWriteFileHandle]
 
-	
 	endBasicProc 0
 	ret 0
 endp runAlgorithm_PROC

@@ -4,6 +4,7 @@ keysArrayLength dw 72d
 
 ;===== Password =====
 password db 'defaultpass20202$'
+passwordLength dw 16d
 
 ;===== File Related Data =====
 currentReadFileName db '00000000.00000'
@@ -43,9 +44,8 @@ boolFlag db 1d
 
 ;===== Files Library =====
 readBuffer db 256d dup (00h)
-writeBuffer db 256d dup (00h)
 
-; ===== BMP printing =====
+;===== BMP printing =====
 SCREEN_WIDTH equ 320
 SCREEN_HEIGHT equ 200
 
@@ -55,6 +55,8 @@ PBMP_TempHandle dw ?
 PBMP_ScrLine db SCREEN_WIDTH dup (0)
 PBMP_ErrorMsg db 'Error', 13, 10,'$'
 
+;===== BMP data =====
+dataFileErrorName_SCREEN db '' 
 
 ;===== Ascii =====
 Ascii_0 equ 48d

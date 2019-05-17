@@ -10,11 +10,11 @@ include 'Booleans.asm'
 include 'FilesLIB.asm'
 include 'GenKeys.asm'
 include 'Function.asm'
+include 'General.asm'
 include 'BlowFish.asm'
 include 'PKeys.asm'
 include 'FKeys.asm'
 include 'Graphics.asm'
-include 'General.asm'
 
 macro initAllKeys 
 
@@ -65,12 +65,17 @@ start:
 	mov ax, @data
 	mov ds, ax
 	
-	setCurrentReadFileToTester
+	; setCurrentReadFileToTester
 
-	initAllKeys
-	resetCurrentReadFilePointer
+	; initAllKeys
 
-	runAlgorithm 'E'
+	; resetCurrentReadFilePointer
+
+	; runAlgorithm 'E'
+
+	; createDataFile
+
+	retrieveDataFile
 
 	setCurrentReadFileToENCRYPTE
 

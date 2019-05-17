@@ -88,30 +88,39 @@ proc createDataFile_PROC
 
     createFile dataFileName, [currentWriteFileHandle]
 
-    mov cx, 18d
-    CDF_PKeysWriteLoop_LABEL:
-        
-        readFromKey 'p', cx
-
-        mov [word ptr writeBuffer], ax  
-        mov [word ptr writeBuffer + 2d], dx  
-
-        writeToFile [currentWriteFileHandle], 8d, writeBuffer
-        loop CDF_PKeysWriteLOop_LABEL
+    writeToFile [currentWriteFileHandle], [keysArrayLength], Pkeys
+    writeToFile [currentWriteFileHandle], [FkeysArrayLength], Fkeys    
+    writeToFile [currentWriteFileHandle], [passwordLength], password    
+    writeToFile [currentWriteFileHandle], 2d, passwordLength    
     
-    mov cx, 62
-    CDF_FKeysWriteLoop_LABEL:
-        readFromKey 'f', cx
+    closeFile [currentWriteFileHandle]
 
-        mov [word ptr writeBuffer], ax  
-        mov [word ptr writeBuffer + 2d], dx  
-
-        writeToFile [currentWriteFileHandle], 8d, writeBuffer    
-        loop CDF_FKeysWriteLoop_LABEL
-
-     
-    
     ;add a close file statement for data file
     endBasicProc 0
     ret 0
 endp createDataFile_PROC
+
+;===== Copies all the data from the data file back into the CPU =====
+macro retrieveDataFile
+    pushAll
+        
+    call retrieveDataFile_PROC
+
+    popAll
+endm retrieveDataFile
+
+proc retrieveDataFile_PROC
+    initBasicProc 0
+
+    openFile dataFileName, currentReadFileHandle, 'b'
+    
+    readFromFile currentReadFileHandle, [keysArrayLength], Pkeys
+    readFromFile currentReadFileHandle, [FkeysArrayLength], Fkeys    
+    readFromFile currentReadFileHandle, [passwordLength], password  
+    readFromFile currentReadFileHandle, 2d, passwordLength  
+
+    closeFile [currentReadFileHandle]
+
+    endBasicProc 0
+    ret 0
+endp retrieveDataFile_PROC

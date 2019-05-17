@@ -22,20 +22,23 @@ proc generatePKeys_PROC
 	
 	mov cx, [keysArrayLength]
 	GPK_passwordXorWithKeysIter_LABEL:
-		cmp [password + si], 24h
-		jne GPK_skipPasswordReset_LABEL
+		mov al, [byte ptr password + si]
+		compare ax, '==' ,Ascii_$
+		checkBoolean [boolFlag], GPK_XorPasswordWithArray_LABEL, GPK_ResetPasswordIndex_LABEL  
 		
-		xor si, si
-		
-	GPK_skipPasswordReset_LABEL:
-		mov al, [password + si]
-		xor al, [byte ptr PKeys + di]
-		
-		mov [byte ptr PKeys + di], al
-		
-		inc di
-		inc si
-		
+		GPK_ResetPasswordIndex_LABEL:
+			xor si, si
+			jmp GPK_XorPasswordWithArray_LABEL
+
+		GPK_XorPasswordWithArray_LABEL:
+			mov al, [password + si]
+			xor al, [byte ptr PKeys + di]
+			
+			mov [byte ptr PKeys + di], al
+			
+			inc di
+			inc si
+			
 	loop GPK_passwordXorWithKeysIter_LABEL
 	
 	;Stage 2 - encrypt the first 64 bits (8 bytes) with the PKeys 18 times
