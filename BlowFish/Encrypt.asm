@@ -121,7 +121,8 @@ proc finishEncryption_PROC
 	mov ax, [word ptr RStream + 2d]
 	mov [word ptr dataBlockBuffer + 6d], ax
 	
-	writeToFileUsingLength [encryptFileHandle], 8d, dataBlockBuffer
+	mov ax, [FE_CharactersRead_VAR]
+	writeToFileUsingLength [encryptFileHandle], ax, dataBlockBuffer
 
 	mov [FE_CharactersRead_VAR], ax
 

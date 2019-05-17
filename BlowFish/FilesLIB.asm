@@ -286,7 +286,7 @@ proc writeToFileUsingLength_PROC
 
 	mov bx, [WTFUL_FileHandle_VAR] 
 	mov cx, [WTFUL_BytesToWrite_VAR]  
-	lea dx, [WTFUL_DataToWrite_VAR]
+	mov dx, [WTFUL_DataToWrite_VAR]
 	mov ah, 40h 
 	int 21h 
 	

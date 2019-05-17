@@ -76,7 +76,6 @@ start:
 	
 	setCurrentFileToTester
 	openFile currentFileName, currentFileHandle, 'b'
-	writeToFileUsingLength [currentFileHandle], 10, writeIndex
 	
 	initAllKeys
 	resetCurrentFilePointer
