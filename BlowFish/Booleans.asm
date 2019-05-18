@@ -10,12 +10,14 @@ endm setBoolFlag
 
 ;===== Compares between two oparands and sets the boolean flag accordingly =====
 macro compare oparand1, operator, oparand2
+    pushAll
 
     push oparand1
     push operator
     push oparand2
     call compare_PROC
 
+    popAll
 endm compare
 
 C_Oparand1_VAR equ bp + 8
@@ -124,12 +126,16 @@ endm copyBoolFlag
 ;===== Check boolean and jump to correct label =====
 macro checkBoolean CB_boolean_PARAM, CB_labelToTrue_PARAM, CB_labelToFalse_PARAM
 
+    push ax
     mov al, [true]
     cmp CB_boolean_PARAM, al
+    pop ax
     je CB_labelToTrue_PARAM
 
+    push ax
     mov al, [false]
     cmp CB_boolean_PARAM, al
+    pop ax
     je CB_labelToFalse_PARAM 
 
 endm checkBoolean

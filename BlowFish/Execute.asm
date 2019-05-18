@@ -7,6 +7,7 @@ include 'VarData.asm'
 CODESEG
 include 'BaseLIB.asm'
 include 'Booleans.asm'
+include 'InOut.asm'
 include 'FilesLIB.asm'
 include 'GenKeys.asm'
 include 'Function.asm'
@@ -63,23 +64,29 @@ start:
 	mov ax, @data
 	mov ds, ax
 	
-	setCurrentReadFileToGold
+	; setCurrentReadFileToGold
 	
-	copyFileTypeToAlgorithmFiles currentReadFileName
+	; copyFileTypeToAlgorithmFiles currentReadFileName
 
-	initAllKeys
+	; initAllKeys
 
-	resetCurrentReadFilePointer
+	; resetCurrentReadFilePointer
 
-	runAlgorithm 'E'
+	; runAlgorithm 'E'
 
-	createDataFile
+	; createDataFile
 
-	retrieveDataFile
+	; retrieveDataFile
 
-	copyFileName currentReadFileName, encryptedFileName
+	; copyFileName currentReadFileName, encryptedFileName
 
-	runAlgorithm 'D'
+	; runAlgorithm 'D'
+	
+	switchGraphicsMode 'g'
+
+	readStringFromKeyboard password, Ascii_Enter, 16
+	pop ax
+	
 
 exit:
 mov ax, 4C00h

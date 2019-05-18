@@ -1,56 +1,22 @@
-;=========== MACROS ===========
-macro printBMP PBMP_Name_PARAM
-	
-	
-	push offset PBMP_Name_PARAM
-	call PBMP_openFile_PROC
-	call PBMP_ReadHeader_PROC
-	call PBMP_ReadPalette_PROC
-	call PBMP_CopyPal_PROC
-	call PBMP_CopyBitmap_PROC
-	;add a close file statement for PBMP_Name_PARAM
-	
-	
-endm
-
-macro SwitchGraphicsMode SGM_DesiredMode_PARAM
+;===== Switch graphics mode ('t' pt 'g') =====
+macro switchGraphicsMode SGM_DesiredMode_PARAM
 	
 	push SGM_DesiredMode_PARAM
-	call SwitchGraphicsMode_PROC
+	call switchGraphicsMode_PROC
 	
 endm
-
-macro ClearScreen 
-	
-	call ClearScreen_PROC
-	
-endm
-
-
-;=========== PROCEDURES ==========
-proc ClearScreen_PROC
-
-	initBasicProc 0
-	
-	mov ax, 13h
-	INT 10h
-	
-	endBasicProc 0
-	ret
-	
-endp ClearScreen_PROC
 
 SGM_DesiredMode_VAR equ [bp + 4]
-PROC SwitchGraphicsMode_PROC
+PROC switchGraphicsMode_PROC
 	
 	initBasicProc 0
 	
 	mov ah, SGM_DesiredMode_VAR 
 	
-	cmp ah, 'g'
+	cmp ah, Ascii_g
 	je SGM_SwitchToGraphicMode_LABEL
 	
-	cmp ah, 't'
+	cmp ah, Ascii_t
 	je SGM_SwitchToTextMode_LABEL
 	
 SGM_SwitchToTextMode_LABEL:
@@ -69,8 +35,22 @@ SGM_Finish_LABEL:
 	endBasicProc 0
 	ret 2
 	
-ENDP SwitchGraphicsMode_PROC
+ENDP switchGraphicsMode_PROC
 
+;===== Print a BMP image in graphics mode =====
+macro printBMP PBMP_Name_PARAM
+	
+	
+	push offset PBMP_Name_PARAM
+	call PBMP_openFile_PROC
+	call PBMP_ReadHeader_PROC
+	call PBMP_ReadPalette_PROC
+	call PBMP_CopyPal_PROC
+	call PBMP_CopyBitmap_PROC
+	;add a close file statement for PBMP_Name_PARAM
+	
+	
+endm
 
 OP_NameOffset_VAR equ [bp + 4]
 proc PBMP_openFile_PROC

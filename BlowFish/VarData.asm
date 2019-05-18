@@ -58,7 +58,7 @@ PBMP_ScrLine db SCREEN_WIDTH dup (0)
 PBMP_ErrorMsg db 'Error', 13, 10,'$'
 
 ;===== BMP data =====
-dataFileErrorName_SCREEN db '' 
+dataFileErrorName_SCREEN db ''
 
 ;===== Ascii =====
 Ascii_0 equ 48d
@@ -123,6 +123,6 @@ Ascii_W equ 119d
 Ascii_X equ 120d
 Ascii_Y equ 121d
 Ascii_Z equ 122d
-Ascii_Enter equ 10d
+Ascii_Enter equ 13d
 Ascii_$ equ 36d
 Ascii_Dot equ 46d
