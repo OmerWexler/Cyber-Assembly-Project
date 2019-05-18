@@ -15,9 +15,14 @@ currentWriteFileHandle dw ?
 
 dataFileName db 'datafile.txt', 0
 
-encryptedFileName db 'encrypte.txt', 0
+encryptedFileName db 'encrypte'
+encryptedFileType db '.00000', 0
 
-decryptedFileName db 'decrypte.txt', 0
+decryptedFileName db 'decrypte'
+decryptedFileType db '.00000', 0
+
+readFileIndex dd 0000d
+writeFileIndex dd 0000d
 
 ;===== Blow Fish Algorithm =====
 dataBlockBuffer dq 3333333333333333h ;64 BIT 
@@ -123,3 +128,4 @@ Ascii_Y equ 121d
 Ascii_Z equ 122d
 Ascii_Enter equ 10d
 Ascii_$ equ 36d
+Ascii_Dot equ 46d

@@ -44,40 +44,38 @@ macro setCurrentReadFileToTester
 
 endm setCurrentReadFileToTester
 
-macro setCurrentReadFileToENCRYPTE
-	mov [currentReadFileName + 0], 'E'
-	mov [currentReadFileName + 1], 'N'
-	mov [currentReadFileName + 2], 'C'
-	mov [currentReadFileName + 3], 'R'
-	mov [currentReadFileName + 4], 'Y'
-	mov [currentReadFileName + 5], 'P'
-	mov [currentReadFileName + 6], 'T'
-	mov [currentReadFileName + 7], 'E'
-	mov [currentReadFileName + 8], '.'
-	mov [currentReadFileName + 9], 't'
-	mov [currentReadFileName + 10], 'x'
-	mov [currentReadFileName + 11], 't'
-	mov [currentReadFileName + 12], 0
+macro setCurrentReadFileToGold
+	mov [currentReadFileName + 0], 'G'
+	mov [currentReadFileName + 1], 'o'
+	mov [currentReadFileName + 2], 'l'
+	mov [currentReadFileName + 3], 'd'
+	mov [currentReadFileName + 4], '.'
+	mov [currentReadFileName + 5], 'm'
+	mov [currentReadFileName + 6], 'p'
+	mov [currentReadFileName + 7], '3'
+	mov [currentReadFileName + 8], 0
 
-endm setCurrentReadFileToENCRYPTE
+endm setCurrentReadFileToGold
 
 start:
 	mov ax, @data
 	mov ds, ax
 	
-	; setCurrentReadFileToTester
+	setCurrentReadFileToTester
+	
+	copyFileTypeToAlgorithmFiles currentReadFileName
 
-	; initAllKeys
+	initAllKeys
 
-	; resetCurrentReadFilePointer
+	resetCurrentReadFilePointer
 
-	; runAlgorithm 'E'
+	runAlgorithm 'E'
 
 	; createDataFile
 
-	retrieveDataFile
+	; retrieveDataFile
 
-	setCurrentReadFileToENCRYPTE
+	copyFileName currentReadFileName, encryptedFileName
 
 	runAlgorithm 'D'
 

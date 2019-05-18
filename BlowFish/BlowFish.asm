@@ -35,7 +35,6 @@ proc preapareAlgorithm_PROC
 	initBasicProc 0
 
 	readFromFile currentReadFileHandle, 8d, dataBlockBuffer
-
 	mov [PA_CharacterRead_VAR], ax
 	
 	;Transfer the new data into the two streams.	
@@ -243,7 +242,7 @@ endm runAlgorithm
 
 proc runAlgorithm_PROC 
 	initBasicProc 0
-	
+
 	call createNewReturnFile_PROC
 	openFile currentReadFileName, currentReadFileHandle, 'r'
 
