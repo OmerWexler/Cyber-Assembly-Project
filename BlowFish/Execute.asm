@@ -10,7 +10,9 @@ include 'Booleans.asm'
 include 'FilesLIB.asm'
 include 'GenKeys.asm'
 include 'Function.asm'
-include 'General.asm'
+include 'Password.asm'
+include 'Filename.asm'
+include 'Datafile.asm'
 include 'BlowFish.asm'
 include 'PKeys.asm'
 include 'FKeys.asm'
@@ -61,7 +63,7 @@ start:
 	mov ax, @data
 	mov ds, ax
 	
-	setCurrentReadFileToTester
+	setCurrentReadFileToGold
 	
 	copyFileTypeToAlgorithmFiles currentReadFileName
 

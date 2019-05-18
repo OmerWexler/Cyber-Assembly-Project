@@ -90,3 +90,8 @@ macro readSystemTime
 	mov ah, 2ch
 	int 21h
 endm readSystemTime
+
+;===== Read from keyboard buffer =====
+macro waitForKeyboardInput
+	
+endm waitForKeyboardInput
