@@ -21,9 +21,6 @@ encryptedFileType db '.00000', 0
 decryptedFileName db 'decrypte'
 decryptedFileType db '.00000', 0
 
-readFileIndex dd 0000d
-writeFileIndex dd 0000d
-
 ;===== Blow Fish Algorithm =====
 dataBlockBuffer dq 3333333333333333h ;64 BIT 
 LStream         dd 11111111h ;32 BIT

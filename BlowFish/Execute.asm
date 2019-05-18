@@ -71,9 +71,9 @@ start:
 
 	runAlgorithm 'E'
 
-	; createDataFile
+	createDataFile
 
-	; retrieveDataFile
+	retrieveDataFile
 
 	copyFileName currentReadFileName, encryptedFileName
 

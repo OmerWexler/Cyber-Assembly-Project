@@ -215,15 +215,15 @@ proc iterAlgoritm_PROC
 		push ax
 
 		call finishEncryption_PROC
-		add sp, 2 ;reorder stack after all the stack variables traveled fine
-
+		add sp, 2d
 		checkBoolean [boolFlag], IA_Recall_LABEL, IA_Exit_LABEL ;checks the already set boolean flag
 
 	IA_Recall_LABEL:
+		add sp, 2d
 		call iterAlgoritm_PROC
 	
 	IA_Exit_LABEL:
-	ret 0
+	ret 2
 endp iterAlgoritm_PROC
 
 ;===== Jumpstarts the recursive algorithm procedure =====
