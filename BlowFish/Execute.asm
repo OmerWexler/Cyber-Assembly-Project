@@ -61,35 +61,49 @@ macro setCurrentReadFileToGold
 
 endm setCurrentReadFileToGold
 
+macro setCurrentReadFileToEarth
+	mov [currentReadFileName + 0], 'E'
+	mov [currentReadFileName + 1], 'a'
+	mov [currentReadFileName + 2], 'r'
+	mov [currentReadFileName + 3], 't'
+	mov [currentReadFileName + 4], 'h'
+	mov [currentReadFileName + 5], '.'
+	mov [currentReadFileName + 6], 'm'
+	mov [currentReadFileName + 7], 'p'
+	mov [currentReadFileName + 8], '4'
+	mov [currentReadFileName + 9], 0
+
+endm setCurrentReadFileToEarth
+
 start:
 	mov ax, @data
 	mov ds, ax
 	
-	; setCurrentReadFileToGold
+	setCurrentReadFileToEarth
 	
-	; copyFileTypeToAlgorithmFiles currentReadFileName
+	copyFileTypeToAlgorithmFiles currentReadFileName
 
-	; initAllKeys
+	initAllKeys
 
-	; resetCurrentReadFilePointer
+	resetCurrentReadFilePointer
 
-	; runAlgorithm 'E'
+	runAlgorithm 'E'
 
-	; createDataFile
+	createDataFile
 
-	; retrieveDataFile
+	retrieveDataFile
 
-	; copyFileName currentReadFileName, encryptedFileName
+	copyFileName currentReadFileName, encryptedFileName
 
-	; runAlgorithm 'D'
+	runAlgorithm 'D'
 	
-	initMouse
-	switchGraphicsMode 'g'
+	; initMouse
+	; switchGraphicsMode 'g'
 	
-	copyFileName PBMP_Name, openingScreen2Name
-	printBMP
+	; copyFileName PBMP_Name, openingScreenName
+	; printBMP
 	
-	waitForKeyboardInput
+	; waitForKeyboardInput
 	
 exit:
 mov ax, 4C00h
