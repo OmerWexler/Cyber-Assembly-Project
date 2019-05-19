@@ -18,6 +18,7 @@ include 'BlowFish.asm'
 include 'PKeys.asm'
 include 'FKeys.asm'
 include 'Graphics.asm'
+; include 'Print.asm'
 
 macro initAllKeys 
 
@@ -82,13 +83,15 @@ start:
 
 	; runAlgorithm 'D'
 	
+	initMouse
 	switchGraphicsMode 'g'
-
-	readStringFromKeyboard password, Ascii_Enter, 16
-	pop ax
 	
-
+	copyFileName PBMP_Name, openingScreen2Name
+	printBMP
+	
+	waitForKeyboardInput
+	
 exit:
 mov ax, 4C00h
 int 21h
-END start 
+end start 

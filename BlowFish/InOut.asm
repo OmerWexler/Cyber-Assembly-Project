@@ -57,3 +57,21 @@ proc readStringFromKeyboard_PROC
         endBasicProc 0
         ret 6
 endp readStringFromKeyboard_PROC
+
+;===== hides the mouse from the user =====
+macro hideMouse
+    mov ax, 2
+    int 33h 
+endm hideMouse
+
+;===== shows the mouse to the user =====
+macro showMouse
+    mov ax, 1
+    int 33h
+endm showMouse
+
+;===== Starts the mouse pointer =====
+macro initMouse 
+    mov ax, 0h
+    int 33h
+endm initMouse

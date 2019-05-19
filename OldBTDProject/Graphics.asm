@@ -1,5 +1,5 @@
 ;=========== MACROS ===========
-macro printBMP PMBP_X, PBMP_Y, PBMP_Name
+macro printBMP PBMP_Name
 	
 	
 	push offset PBMP_Name

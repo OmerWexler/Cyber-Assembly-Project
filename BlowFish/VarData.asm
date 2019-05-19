@@ -48,17 +48,20 @@ boolFlag db 1d
 readBuffer db 256d dup (00h)
 
 ;===== BMP printing =====
-SCREEN_WIDTH equ 320
-SCREEN_HEIGHT equ 200
+SCREEN_WIDTH equ 320d
+SCREEN_HEIGHT equ 200d
 
+PBMP_Name db '00000000.bmp', 0
 PBMP_TempHeader db 54 dup (0)
-PBMP_TempPallete db 256 * 4 dup (0)
+PBMP_TempPallete db 400h dup (0)
 PBMP_TempHandle dw ?
 PBMP_ScrLine db SCREEN_WIDTH dup (0)
 PBMP_ErrorMsg db 'Error', 13, 10,'$'
 
 ;===== BMP data =====
-dataFileErrorName_SCREEN db ''
+openingScreenName db 'OP.bmp', 0
+openingScreen2Name db 'OP.bmp', 0
+openingScreen3Name db 'OP.bmp', 0
 
 ;===== Ascii =====
 Ascii_0 equ 48d
