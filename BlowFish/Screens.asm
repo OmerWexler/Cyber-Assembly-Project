@@ -90,10 +90,6 @@ proc checkTile_PROC
 endp checkTile_PROC
 
 ;===== Checks if the mouse is inside the hitbox of any button and changes accordingly =====
-macro updateButtons
-    call updateButtons_PROC
-endm updateButtons
-
 proc updateButtons_PROC
 
     UB_Check_LABEL:
@@ -143,3 +139,9 @@ macro setNextType SCT_Type_PARAM
 
     pop ax
 endm setNextType
+
+;===== Loops through one screen type/status life cycle (until change occurs) =====
+;as described in - (/screens/screen logics.png)
+macro runScreen RS_screenName_PARAM
+    
+endm runScreen
