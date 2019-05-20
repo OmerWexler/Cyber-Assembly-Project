@@ -51,15 +51,58 @@ readBuffer db 256d dup (00h)
 SCREEN_WIDTH equ 320d
 SCREEN_HEIGHT equ 200d
 
-PBMP_Name db '00000000.bmp', 0
+PBMP_CurrentName db 'TEE00000.bmp', 0
+PBMP_NextName db '00000000.bmp', 0
 PBMP_TempHeader db 54 dup (0)
 PBMP_TempPallete db 400h dup (0)
 PBMP_TempHandle dw ?
 PBMP_ScrLine db SCREEN_WIDTH dup (0)
 PBMP_ErrorMsg db 'Error', 13, 10,'$'
 
-;===== BMP data =====
-openingScreenName db 'test.bmp', 0
+;===== BMP IDs =====
+openningScreen db 'OPS'
+
+;=== decryption ===
+;= intro =
+decryptionIntro  db 'TDI'
+
+;= name =
+decryptionNameEmpty db 'DNE'
+decryptionNameInvalid db 'DNI'
+decryptionNameValid db 'DNV'
+
+;= password =
+decryptionPasswordEmpty db 'DPE'
+decryptionPasswordInvalid db 'DPI'
+decryptionPasswordValid db 'DPV'
+
+;= loading screen =
+decryptionLoadingEmpty db 'DLL'
+decryptionLoadingReady db 'DLR'
+
+;= end =
+decryptionEnd db 'TDE'
+
+;=== encryption ===
+;= intro =
+encryptionIntro db 'TEI'
+
+;= name =
+encryptionNameEmpty db 'ENE'
+encryptionNameInvalid db 'ENI'
+encryptionNameValid db 'ENV'
+
+;= password =
+encryptionPasswordEmpty db 'EPE'
+encryptionPasswordInvalid db 'EPI'
+encryptionPasswordValid db 'EPV'
+
+;= loading screen =
+encryptionLoadingEmpty db 'TEL'
+encryptionLoadingReady db 'TER'
+
+;= end =
+encryptionEnd db 'TEE'
 
 ;===== Ascii =====
 Ascii_0 equ 48d
