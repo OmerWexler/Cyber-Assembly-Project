@@ -75,3 +75,32 @@ macro initMouse
     mov ax, 0h
     int 33h
 endm initMouse
+
+;===== Gets the location of the mouse and status of it's buttons =====
+;=== It's a macro so it could work faster ===
+macro readMouse
+
+    push ax
+    push bx
+    push cx
+    push dx
+
+    mov ax, 00003d
+    int 33h
+
+    mov [mouseY], dx
+    mov [clickStatus], bx
+
+    mov ax, cx
+	mov dx, 0000d
+	mov cx, 2d
+
+	div cx
+    mov [mouseX], ax
+    
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+
+endm readMouse

@@ -1,3 +1,4 @@
+.386
 IDEAL
 MODEL small
 STACK 100h
@@ -18,7 +19,7 @@ include 'BlowFish.asm'
 include 'PKeys.asm'
 include 'FKeys.asm'
 include 'Graphics.asm'
-; include 'Print.asm'
+include 'Screens.asm'
 
 macro initAllKeys 
 
@@ -75,35 +76,46 @@ macro setCurrentReadFileToEarth
 
 endm setCurrentReadFileToEarth
 
+macro setMouse X, Y
+
+	mov ax, X
+	mov [mouseX], ax
+	
+	mov ax, Y
+	mov [mouseY], ax
+	
+endm setMouse
+
 start:
 	mov ax, @data
 	mov ds, ax
+
+	; setCurrentReadFileToEarth
 	
-	setCurrentReadFileToEarth
+	; copyFileTypeToAlgorithmFiles currentReadFileName
+
+	; initAllKeys
+
+	; resetCurrentReadFilePointer
+
+	; runAlgorithm 'E'
+
+	; createDataFile
+
+	; retrieveDataFile
+
+	; copyFileName currentReadFileName, encryptedFileName
+
+	; runAlgorithm 'D'
 	
-	copyFileTypeToAlgorithmFiles currentReadFileName
-
-	initAllKeys
-
-	resetCurrentReadFilePointer
-
-	runAlgorithm 'E'
-
-	createDataFile
-
-	retrieveDataFile
-
-	copyFileName currentReadFileName, encryptedFileName
-
-	runAlgorithm 'D'
+	switchGraphicsMode 'g'
 	
-	; initMouse
-	; switchGraphicsMode 'g'
+	initMouse
+	setNextType 'O'
 	
-	; copyFileName PBMP_Name, openingScreenName
-	; printBMP
-	
-	; waitForKeyboardInput
+	showMouse
+		
+	printBMP
 	
 exit:
 mov ax, 4C00h

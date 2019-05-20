@@ -1,4 +1,3 @@
-
 ;===== Checks for the type of the given file's name and sets the same type for the encrypte and decrypte files =====
 macro copyFileTypeToAlgorithmFiles CFT_FileName_PARAM
     pushAll
@@ -27,7 +26,7 @@ proc copyFileTypeToAlgorithmFiles_PROC
         CFT_CopyType_LABEL:    
             xor ax, ax    
             mov al, [byte ptr si]
-            compare ax, '==', Ascii_0
+            compare ax, '==', 0000d
 
             mov [byte ptr encryptedFileType + di], al
             mov [byte ptr decryptedFileType + di], al
@@ -69,11 +68,11 @@ proc copyFileName_PROC
         inc si
         inc di
 
-        compare ax, '==', Ascii_0
+        compare ax, '==', 0000d
         checkBoolean [boolFlag], CFN_Exit_LABEL, CFN_CopyLoop_LABEL
 
 
     CFN_Exit_LABEL:
     endBasicProc 0 
-    ret 0
+    ret 4
 endp copyFileName_PROC

@@ -1,2 +1,9 @@
-Fatal: Unable to open file 'execute.obj'
+
+ Start  Stop   Length Name               Class
+
+ 00000H 0155FH 01560H _TEXT              CODE
+ 01560H 01F46H 009E7H _DATA              DATA
+ 01F50H 0204FH 00100H STACK              STACK
+
+Program entry point at 0000:150F
 

@@ -51,35 +51,45 @@ readBuffer db 256d dup (00h)
 SCREEN_WIDTH equ 320d
 SCREEN_HEIGHT equ 200d
 
-PBMP_CurrentScreen db '00000000.bmp', 0
-PBMP_NextScreen db '00000000.bmp', 0
-
 PBMP_TempHeader db 54 dup (0)
 PBMP_TempPallete db 400h dup (0)
 PBMP_TempHandle dw ?
 PBMP_ScrLine db SCREEN_WIDTH dup (0)
 PBMP_ErrorMsg db 'Error', 13, 10,'$'
 
-;===== BMP IDs =====
-openingScreen db 'O'
-decryption db 'E'
-encryption db 'D'
-
 ;===== Screens =====
 isHighlighted db 0000d
 shouldUpdateScreen db 0000d
 
+currentScreen db '00000000.bmp', 0
+nextScreen db '00000000.bmp', 0
+
+sType equ 0 
+stage equ 1 
+status equ 2 
+backButton equ 3 
+nextButton equ 4 
+decryptButton equ 5 
+encryptButton equ 6 
+restartButton equ 7 
+
 ;===== Screen hitboxes =====
-;                    LowX , LowY , HighX, HighY, ArcX,  ArcY
-backButtonBase dw    0000d, 0172d, 0039d, 0191d, 0191d, 0031d 
+;                    LowX , LowY , HighX, HighY, ArcX,  ArcY   button ID
+backButtonBase dw    0000d, 0172d, 0039d, 0191d, 0191d, 0031d, backButton 
 
-nextButtonBase dw    0280d, 0172d, 0320d, 0191d, 0280d, 0181d
+nextButtonBase dw    0280d, 0172d, 0320d, 0191d, 0280d, 0181d, nextButton
 
-decryptButtonBase dw 0000d, 0143d, 0107d, 0174d, 0097d, 0174d
+decryptButtonBase dw 0000d, 0143d, 0107d, 0174d, 0097d, 0174d, decryptButton
 
-encryptButtonBase dw 0213d, 0143d, 0320d, 0174d, 0213d, 0164d
+encryptButtonBase dw 0213d, 0143d, 0320d, 0174d, 0213d, 0164d, encryptButton
 
-restartButtonBase dw 0263d, 0172d, 0320d, 0191d, 0263d, 0181d
+restartButtonBase dw 0263d, 0172d, 0320d, 0191d, 0263d, 0181d, restartButton
+
+;===== Mouse =====
+mouseX dw 0000d
+mouseY dw 0000d
+
+clickStatus dw 0000d
 
 ;===== Ascii =====
 Ascii_0 equ 48d

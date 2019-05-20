@@ -38,6 +38,7 @@ endp switchGraphicsMode_PROC
 
 ;===== Prints the current bmp picture in name buffer =====
 macro printBMP
+	validateNextScreen
 	call OpenBMP   
 	call ReadHeader
 	call ReadPalette
@@ -51,7 +52,7 @@ endm
 proc OpenBMP
 	mov ah, 3Dh    
 	xor al, al
-	mov dx, offset PBMP_CurrentScreen
+	mov dx, offset currentScreen
 	int 21h
 	mov [PBMP_TempHandle], ax
 	ret
