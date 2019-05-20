@@ -51,7 +51,7 @@ endm
 proc OpenBMP
 	mov ah, 3Dh    
 	xor al, al
-	mov dx, offset PBMP_Name
+	mov dx, offset PBMP_CurrentScreen
 	int 21h
 	mov [PBMP_TempHandle], ax
 	ret

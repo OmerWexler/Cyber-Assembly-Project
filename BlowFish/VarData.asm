@@ -51,8 +51,9 @@ readBuffer db 256d dup (00h)
 SCREEN_WIDTH equ 320d
 SCREEN_HEIGHT equ 200d
 
-PBMP_CurrentName db 'TEE00000.bmp', 0
-PBMP_NextName db '00000000.bmp', 0
+PBMP_CurrentScreen db '00000000.bmp', 0
+PBMP_NextScreen db '00000000.bmp', 0
+
 PBMP_TempHeader db 54 dup (0)
 PBMP_TempPallete db 400h dup (0)
 PBMP_TempHandle dw ?
@@ -60,49 +61,25 @@ PBMP_ScrLine db SCREEN_WIDTH dup (0)
 PBMP_ErrorMsg db 'Error', 13, 10,'$'
 
 ;===== BMP IDs =====
-openningScreen db 'OPS'
+openingScreen db 'O'
+decryption db 'E'
+encryption db 'D'
 
-;=== decryption ===
-;= intro =
-decryptionIntro  db 'TDI'
+;===== Screens =====
+isHighlighted db 0000d
+shouldUpdateScreen db 0000d
 
-;= name =
-decryptionNameEmpty db 'DNE'
-decryptionNameInvalid db 'DNI'
-decryptionNameValid db 'DNV'
+;===== Screen hitboxes =====
+;                    LowX , LowY , HighX, HighY, ArcX,  ArcY
+backButtonBase dw    0000d, 0172d, 0039d, 0191d, 0191d, 0031d 
 
-;= password =
-decryptionPasswordEmpty db 'DPE'
-decryptionPasswordInvalid db 'DPI'
-decryptionPasswordValid db 'DPV'
+nextButtonBase dw    0280d, 0172d, 0320d, 0191d, 0280d, 0181d
 
-;= loading screen =
-decryptionLoadingEmpty db 'DLL'
-decryptionLoadingReady db 'DLR'
+decryptButtonBase dw 0000d, 0143d, 0107d, 0174d, 0097d, 0174d
 
-;= end =
-decryptionEnd db 'TDE'
+encryptButtonBase dw 0213d, 0143d, 0320d, 0174d, 0213d, 0164d
 
-;=== encryption ===
-;= intro =
-encryptionIntro db 'TEI'
-
-;= name =
-encryptionNameEmpty db 'ENE'
-encryptionNameInvalid db 'ENI'
-encryptionNameValid db 'ENV'
-
-;= password =
-encryptionPasswordEmpty db 'EPE'
-encryptionPasswordInvalid db 'EPI'
-encryptionPasswordValid db 'EPV'
-
-;= loading screen =
-encryptionLoadingEmpty db 'TEL'
-encryptionLoadingReady db 'TER'
-
-;= end =
-encryptionEnd db 'TEE'
+restartButtonBase dw 0263d, 0172d, 0320d, 0191d, 0263d, 0181d
 
 ;===== Ascii =====
 Ascii_0 equ 48d
