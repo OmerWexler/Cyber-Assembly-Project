@@ -1,3 +1,11 @@
+;===== Enables the chosen button to change and be used =====
+macro setButton EB_ButtonToEnable_LABEL, EB_Value_PARAM
+
+    mov al, EB_Value_PARAM
+    mov EB_ButtonToEnable_LABEL, al
+
+endm setButton 
+
 ;===== Resets all the buttons on next screen (unlights them) =====
 macro resetButtons
     
@@ -7,37 +15,16 @@ macro resetButtons
     mov [byte ptr nextScreen + decryptButton], al 
     mov [byte ptr nextScreen + encryptButton], al 
     mov [byte ptr nextScreen + restartButton], al 
-
+    
 endm resetButtons 
 
-;===== Makes sure the file named in NextScreen exists, and ajusts accordingly =====
-macro validateNextScreen
+;===== Resets the status into 0 =====
+macro resetStatus
+
+    mov al, Ascii_0
+    mov [byte ptr nextScreen + status], al
     
-    call validateNextScreen_PROC
-    
-endm validateNextScreen
-
-proc validateNextScreen_PROC
-
-    mov al, 2
-    mov dx, offset nextScreen
-    mov ah, 3dh
-    int 21h
-
-    jc VCS_InValid_LABEL
-    jnc VCS_Valid_LABEL 
-
-    VCS_Valid_LABEL:
-        copyFileName currentScreen, nextScreen
-        jmp VCS_Exit_LABEL
-        
-    VCS_InValid_LABEL:
-        copyFileName nextScreen, currentScreen
-        jmp VCS_Exit_LABEL
-
-    VCS_Exit_LABEL:
-    ret 0
-endp validateNextScreen_PROC
+endm resetStatus
 
 ;===== Compares the current position a given button's area =====
 ;returns if an update is needed
@@ -94,33 +81,51 @@ proc updateButtons_PROC
 
     UB_Check_LABEL:
         setBoolFlag [false]
+        
         resetButtons
-        readMouse
-
+        
         UB_CheckBack_LABEL:
+            cmp [backEnabled], 0d
+            je UB_CheckNext_LABEL
+
             checkTile backButtonBase
             checkBoolean [boolFlag], UB_CheckNewUpdate_LABEL, UB_CheckNext_LABEL
-            
+
         UB_CheckNext_LABEL:
+            cmp [nextEnabled], 0d
+            je UB_CheckDecrypt_LABEL
+            
             checkTile nextButtonBase
             checkBoolean [boolFlag], UB_CheckNewUpdate_LABEL, UB_CheckDecrypt_LABEL
-
+        
         UB_CheckDecrypt_LABEL:
+            cmp [decryptEnabled], 0d
+            je UB_CheckEncrypt_LABEL
+
             checkTile decryptButtonBase
             checkBoolean [boolFlag], UB_CheckNewUpdate_LABEL, UB_CheckEncrypt_LABEL
-
+        
         UB_CheckEncrypt_LABEL:
+            cmp [encryptEnabled], 0d
+            je UB_CheckRestart_LABEL
+
             checkTile encryptButtonBase
             checkBoolean [boolFlag], UB_CheckNewUpdate_LABEL, UB_CheckRestart_LABEL
-
+        
         UB_CheckRestart_LABEL:
+            cmp [restartEnabled], 0d
+            je UB_CheckNewUpdate_LABEL
+            
             checkTile restartButtonBase
-            checkBoolean [boolFlag], UB_CheckNewUpdate_LABEL, UB_Check_LABEL
+            jmp UB_CheckNewUpdate_LABEL
 
     UB_CheckNewUpdate_LABEL:
+        compareFileNames currentScreen, nextScreen
+        checkBoolean [boolFlag], UB_Finish_LABEL, UB_UpdateNeeded_LABEL
         
-        printBMP
-        jmp UB_Finish_LABEL
+        UB_UpdateNeeded_LABEL:
+            printBMP
+            jmp UB_Finish_LABEL
 
     UB_Finish_LABEL:
     ret 0
@@ -139,9 +144,182 @@ macro setNextType SCT_Type_PARAM
 
     pop ax
 endm setNextType
+;===== Sets the current screen type - O (opening), D (decryption), E (encryption) =====
+macro setNextType SCT_Type_PARAM
+    push ax
+
+    mov al, SCT_Type_PARAM
+    mov [nextScreen + SType], al
+    
+
+    pop ax
+endm setNextType
+;===== Sets the current screen type - O (opening), D (decryption), E (encryption) =====
+macro setNextType SCT_Type_PARAM
+    push ax
+
+    mov al, SCT_Type_PARAM
+    mov [nextScreen + SType], al
+    
+
+    pop ax
+endm setNextType
+;===== Sets the current screen type - O (opening), D (decryption), E (encryption) =====
+macro setNextType SCT_Type_PARAM
+    push ax
+
+    mov al, SCT_Type_PARAM
+    mov [nextScreen + SType], al
+    
+
+    pop ax
+endm setNextType
+
+
+;===== Checks if any of the currentSCreens Button is currently up =====
+macro isAnyButtonLit
+    
+    push 0000d ;reserve room for return value
+    call isAnyButtonLit_PROC
+
+endm isAnyButtonLit
+
+IBAL_ReturnValue_VAR equ bp + 4
+proc isAnyButtonLit_PROC
+    initBasicProc 0
+    setBoolFlag [false]
+
+    mov cx, 5d
+    IBAL_CheckName_LABEL:
+
+        mov di, cx
+        add di, 2d
+
+        xor ax, ax
+
+        mov al, [byte ptr currentScreen + di]
+        compare ax, '==', Ascii_1
+        checkBoolean [boolFlag], IBAL_ReturnTrue_LABEL, IBAL_ContinueLoop_LABEL
+        
+        IBAL_ContinueLoop_LABEL:
+        loop IBAL_CheckName_LABEL
+        
+        jmp IABL_Exit_LABEL
+
+    IBAL_ReturnTrue_LABEL:
+        mov [IBAL_ReturnValue_VAR], di
+
+        setBoolFlag [true]
+        jmp IABL_Exit_LABEL
+
+    IABL_Exit_LABEL:
+    endBasicProc 0
+    ret 0
+endp isAnyButtonLit_PROC
+
+;===== Checks for a mouse click =====
+macro checkMouseClick CMC_ButtonLit_PARAM
+    
+    push CMC_ButtonLit_PARAM
+    call checkMouseCLick_PROC
+
+endm checkMouseClick
+
+CMC_ButtonToExecute_VAR equ bp + 4
+proc checkMouseCLick_PROC
+    initBasicProc 0
+    
+    compare [clickStatus], '==', leftClick
+    checkBoolean [boolFlag], CMC_Clicked_LABEL, CMC_Exit_LABEL
+
+    CMC_Clicked_LABEL:
+        mov ax, [CMC_ButtonToExecute_VAR]
+        
+
+
+    CMC_Exit_LABEL:
+    endBasicProc 0
+    ret 2
+endp checkMouseCLick_PROC
+
+;===== Runs the logic of what happnes when you press the back Button =====
+proc executeBackButton_PROC
+
+    setBoolFlag [false]
+
+    mov al, [byte ptr nextScreen + stage]
+    compare ax, '>', Ascii_0
+    checkBoolean [boolFlag], EBB_DecStage_LABEL, EBB_ShouldDecType_LABEL
+
+    EBB_ShouldDecType_LABEL:    
+        xor ax, ax
+
+        mov al, [byte ptr nextScreen + sType]
+        compare ax, '==', 'O'
+        checkBoolean [boolFlag], EBB_LeaveSoftware_LABEL, EBB_CheckEncrypt_LABEL  
+
+        EBB_CheckEncrypt_LABEL:
+            xor ax, ax
+
+            mov al, [byte ptr nextScreen + sType]
+            compare ax, '==', 'E'
+            checkBoolean [boolFlag], EBB_GoToOpeningScreen_LABEL, EBB_CheckDecrypt_LABEL    
+
+        EBB_CheckDecrypt_LABEL:
+            xor ax, ax       
+             
+            mov al, [byte ptr nextScreen + sType]
+            compare ax, '==', 'D'
+            checkBoolean [boolFlag], EBB_GoToOpeningScreen_LABEL, EBB_Exit_LABEL    
+
+    EBB_DecStage_LABEL:
+        xor ax, ax
+
+        mov al, [byte ptr nextScreen + stage]
+        compare ax, '==', Ascii_4
+        checkBoolean [boolFlag], EBB_LeaveSoftware_LABEL, EBB_ShouldDecNormal_LABEL;because it's the final stage, and the user can't come back, only exit using button
+        
+            EBB_ShouldDecNormal_LABEL:
+                xor ax, ax
+
+                mov al, [byte ptr nextScreen + stage]
+                dec al
+                mov [byte ptr nextScreen + stage], al
+
+                resetButtons
+                resetStatus
+                printBMP    
+
+                jmp EBB_Exit_LABEL
+
+    EBB_GoToOpeningScreen_LABEL:
+        setNextType 'O'
+        resetButtons
+        resetStatus
+        printBMP    
+
+        jmp EBB_Exit_LABEL
+
+    EBB_LeaveSoftware_LABEL:
+        mov ax, 4C00h
+        int 21h
+
+    EBB_Exit_LABEL:
+        ret 0
+endp executeBackButton_PROC
 
 ;===== Loops through one screen type/status life cycle (until change occurs) =====
 ;as described in - (/screens/screen logics.png)
 macro runScreen RS_screenName_PARAM
     
+    call updateButtons_PROC
+    call isAnyButtonLit
+    pop ax
+    checkBoolean [boolFlag], RS_CheckClick_LABEL, RS_Continue_LABEL
+
+    RS_CheckClick_LABEL:
+
+        
+    RS_Continue_LABEL:
+
 endm runScreen

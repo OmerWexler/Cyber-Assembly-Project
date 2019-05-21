@@ -36,18 +36,64 @@ proc switchGraphicsMode_PROC
 		ret 2
 endp switchGraphicsMode_PROC
 
+
+;===== Makes sure the file named in NextScreen exists, and ajusts accordingly =====
+macro validateNextScreen
+    
+    call validateNextScreen_PROC
+    
+endm validateNextScreen
+
+proc validateNextScreen_PROC
+
+    mov al, 2
+    mov dx, offset nextScreen
+    mov ah, 3dh
+    int 21h
+
+    jc VCS_InValid_LABEL
+    jnc VCS_Valid_LABEL 
+
+    VCS_Valid_LABEL:
+        closeFile ax
+        copyFileName currentScreen, nextScreen
+        setBoolFlag [true]
+        jmp VCS_Exit_LABEL
+        
+    VCS_InValid_LABEL:
+        copyFileName nextScreen, currentScreen
+        setBoolFlag [false]
+        jmp VCS_Exit_LABEL
+
+    VCS_Exit_LABEL:
+    ret 0
+endp validateNextScreen_PROC
+
 ;===== Prints the current bmp picture in name buffer =====
 macro printBMP
-	validateNextScreen
-	call OpenBMP   
-	call ReadHeader
-	call ReadPalette
-	call CopyPal
-	hideMouse
-	call CopyBitmap
-	showMouse
-	call CloseBMP
+	call printBMP_PROC
 endm 
+
+proc printBMP_PROC
+	initBasicProc 0
+
+	validateNextScreen
+	checkBoolean [boolFlag], PBMP_Filevalid_LABEL, PBMP_FileInvalid_LABEL
+	
+	PBMP_Filevalid_LABEL:
+		call OpenBMP   
+		call ReadHeader
+		call ReadPalette
+		call CopyPal
+		hideMouse
+		call CopyBitmap
+		showMouse
+		call CloseBMP
+
+	PBMP_FileInvalid_LABEL:
+		endBasicProc 0
+		ret 0
+endp printBMP_PROC
 ;---------------------------------------------------------------;
 proc OpenBMP
 	mov ah, 3Dh    

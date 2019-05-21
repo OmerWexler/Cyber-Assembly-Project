@@ -1,9 +1,16 @@
+;===== Set a boolean true or false =====
+macro setBoolean SB_BooleanToSet_PARAM, SB_NewValue_PARAM
+    
+    mov al, SB_NewValue_PARAM
+    mov SB_BooleanToSet_PARAM, al
+
+endm setBoolean
+
 ;===== Set boolFlag =====
 macro setBoolFlag boolean
     push ax
     
-    mov al, boolean
-    mov [boolflag], al
+    setBoolean [boolFlag], boolean
     
     pop ax
 endm setBoolFlag
@@ -188,11 +195,3 @@ CIB_Return_LABEL:
     endBasicProc 0
     ret 6
 endp checkIfBetween_PROC
-
-;===== Set a boolean true or false =====
-macro setBoolean SB_BooleanToSet_PARAM, SB_NewValue_PARAM
-    
-    mov al, SB_NewValue_PARAM
-    mov SB_BooleanToSet_PARAM, al
-
-endm setBoolean

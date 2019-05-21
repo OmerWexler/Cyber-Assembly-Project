@@ -58,11 +58,8 @@ PBMP_ScrLine db SCREEN_WIDTH dup (0)
 PBMP_ErrorMsg db 'Error', 13, 10,'$'
 
 ;===== Screens =====
-isHighlighted db 0000d
-shouldUpdateScreen db 0000d
-
 currentScreen db '00000000.bmp', 0
-nextScreen db '00000000.bmp', 0
+nextScreen    db 'D4000000.bmp', 0
 
 sType equ 0 
 stage equ 1 
@@ -73,9 +70,15 @@ decryptButton equ 5
 encryptButton equ 6 
 restartButton equ 7 
 
+nextEnabled db 00d 
+backEnabled db 00d 
+decryptEnabled db 00d 
+encryptEnabled db 00d
+restartEnabled db 00d 
+
 ;===== Screen hitboxes =====
-;                    LowX , LowY , HighX, HighY, ArcX,  ArcY   button ID
-backButtonBase dw    0000d, 0172d, 0039d, 0191d, 0191d, 0031d, backButton 
+;                    LowX , LowY , HighX, HighY, ArcX,  ArcY   Button ID
+backButtonBase dw    0000d, 0172d, 0039d, 0191d, 0191d, 0031d, backButton
 
 nextButtonBase dw    0280d, 0172d, 0320d, 0191d, 0280d, 0181d, nextButton
 
@@ -91,6 +94,9 @@ mouseY dw 0000d
 
 clickStatus dw 0000d
 
+leftClick equ 1d
+rightClick equ 2d
+bothClick equ 3d
 ;===== Ascii =====
 Ascii_0 equ 48d
 Ascii_1 equ 49d

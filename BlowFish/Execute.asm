@@ -111,12 +111,38 @@ start:
 	switchGraphicsMode 'g'
 	
 	initMouse
-	setNextType 'O'
 	
 	showMouse
 		
 	printBMP
+
 	
+
+	; setButton [backEnabled], [true]
+	; setButton [nextEnabled], [false]
+	; setButton [decryptEnabled], [false]
+	; setButton [encryptEnabled], [false]
+	; setButton [restartEnabled], [true]
+
+	; setMouse 20, 180
+	; call updateButtons_PROC
+
+	; setMouse 300, 150
+	; call updateButtons_PROC	
+
+	; l:
+	; 	readMouse
+	; 	call updateButtons_PROC
+	; 	jmp l
+	; waitForKeyboardInput
+	
+	; call executeBackButton_PROC
+	
+	; waitForKeyboardInput
+	
+	; isAnyButtonLit
+	; pop ax
+
 exit:
 mov ax, 4C00h
 int 21h
