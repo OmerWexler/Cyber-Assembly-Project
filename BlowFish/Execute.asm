@@ -20,6 +20,7 @@ include 'PKeys.asm'
 include 'FKeys.asm'
 include 'Graphics.asm'
 include 'Screens.asm'
+include 'Buttons.asm'
 
 macro initAllKeys 
 
@@ -116,13 +117,11 @@ start:
 		
 	printBMP
 
-	
-
-	; setButton [backEnabled], [true]
-	; setButton [nextEnabled], [false]
-	; setButton [decryptEnabled], [false]
-	; setButton [encryptEnabled], [false]
-	; setButton [restartEnabled], [true]
+	setButton [backEnabled], [true]
+	setButton [nextEnabled], [true]
+	setButton [decryptEnabled], [false]
+	setButton [encryptEnabled], [false]
+	setButton [restartEnabled], [false]
 
 	; setMouse 20, 180
 	; call updateButtons_PROC
@@ -130,18 +129,11 @@ start:
 	; setMouse 300, 150
 	; call updateButtons_PROC	
 
-	; l:
-	; 	readMouse
-	; 	call updateButtons_PROC
-	; 	jmp l
+	l:
+		readMouse
+		call runScreen_PROC
+		jmp l
 	; waitForKeyboardInput
-	
-	; call executeBackButton_PROC
-	
-	; waitForKeyboardInput
-	
-	; isAnyButtonLit
-	; pop ax
 
 exit:
 mov ax, 4C00h

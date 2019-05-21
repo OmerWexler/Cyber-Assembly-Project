@@ -77,6 +77,10 @@ proc checkTile_PROC
 endp checkTile_PROC
 
 ;===== Checks if the mouse is inside the hitbox of any button and changes accordingly =====
+macro updateButtons
+    call updateButtons_PROC
+endm updateButtons
+
 proc updateButtons_PROC
 
     UB_Check_LABEL:
@@ -131,9 +135,6 @@ proc updateButtons_PROC
     ret 0
 endp updateButtons_PROC
 
-;===== Check if the user has clicked on an option =====
-;===== Updates the displayed screen based on the next name and about should the screen be updated =====
-
 ;===== Sets the current screen type - O (opening), D (decryption), E (encryption) =====
 macro setNextType SCT_Type_PARAM
     push ax
@@ -144,38 +145,7 @@ macro setNextType SCT_Type_PARAM
 
     pop ax
 endm setNextType
-;===== Sets the current screen type - O (opening), D (decryption), E (encryption) =====
-macro setNextType SCT_Type_PARAM
-    push ax
-
-    mov al, SCT_Type_PARAM
-    mov [nextScreen + SType], al
-    
-
-    pop ax
-endm setNextType
-;===== Sets the current screen type - O (opening), D (decryption), E (encryption) =====
-macro setNextType SCT_Type_PARAM
-    push ax
-
-    mov al, SCT_Type_PARAM
-    mov [nextScreen + SType], al
-    
-
-    pop ax
-endm setNextType
-;===== Sets the current screen type - O (opening), D (decryption), E (encryption) =====
-macro setNextType SCT_Type_PARAM
-    push ax
-
-    mov al, SCT_Type_PARAM
-    mov [nextScreen + SType], al
-    
-
-    pop ax
-endm setNextType
-
-
+ 
 ;===== Checks if any of the currentSCreens Button is currently up =====
 macro isAnyButtonLit
     
@@ -214,19 +184,19 @@ proc isAnyButtonLit_PROC
 
     IABL_Exit_LABEL:
     endBasicProc 0
-    ret 0
+    ret 
 endp isAnyButtonLit_PROC
 
 ;===== Checks for a mouse click =====
 macro checkMouseClick CMC_ButtonLit_PARAM
     
     push CMC_ButtonLit_PARAM
-    call checkMouseCLick_PROC
+    call checkMouseClick_PROC
 
 endm checkMouseClick
 
 CMC_ButtonToExecute_VAR equ bp + 4
-proc checkMouseCLick_PROC
+proc checkMouseClick_PROC
     initBasicProc 0
     
     compare [clickStatus], '==', leftClick
@@ -234,92 +204,75 @@ proc checkMouseCLick_PROC
 
     CMC_Clicked_LABEL:
         mov ax, [CMC_ButtonToExecute_VAR]
-        
+
+        CMC_CheckBack_LABEL:
+            compare ax, '==', backButton
+            checkBoolean [boolFlag], CMC_ExecuteBack_LABEL, CMC_CheckNext_LABEL
+            
+            CMC_ExecuteBack_LABEL:
+                call executeBackButton_PROC
+                jmp CMC_Exit_LABEL
 
 
+
+        CMC_CheckNext_LABEL:
+            compare ax, '==', nextButton
+            checkBoolean [boolFlag], CMC_ExecuteNext_LABEL, CMC_CheckDecrypt_LABEL
+
+            CMC_ExecuteNext_LABEL:
+                call executeNextButton_PROC
+                jmp CMC_Exit_LABEL
+
+
+                
+                
+        CMC_CheckDecrypt_LABEL:
+            compare ax, '==', decryptButton
+            checkBoolean [boolFlag], CMC_ExecuteDecrypt_LABEL, CMC_CheckEncrypt_LABEL
+                
+            CMC_ExecuteDecrypt_LABEL:
+                call executeDecryptButton_PROC
+                jmp CMC_Exit_LABEL
+
+
+
+        CMC_CheckEncrypt_LABEL:
+            compare ax, '==', encryptButton
+            checkBoolean [boolFlag], CMC_ExecuteEncrypt_LABEL, CMC_CheckRestart_LABEL
+                
+            CMC_ExecuteEncrypt_LABEL:
+                call executeEncryptButton_PROC
+                jmp CMC_Exit_LABEL
+
+
+                
+        CMC_CheckRestart_LABEL:
+            compare ax, '==', restartButton
+            checkBoolean [boolFlag], CMC_ExecuteRestart_LABEL, CMC_Exit_LABEL
+                
+            CMC_ExecuteRestart_LABEL:
+                call executeRestartButton_PROC
+                jmp CMC_Exit_LABEL
+                
+                
     CMC_Exit_LABEL:
     endBasicProc 0
     ret 2
-endp checkMouseCLick_PROC
-
-;===== Runs the logic of what happnes when you press the back Button =====
-proc executeBackButton_PROC
-
-    setBoolFlag [false]
-
-    mov al, [byte ptr nextScreen + stage]
-    compare ax, '>', Ascii_0
-    checkBoolean [boolFlag], EBB_DecStage_LABEL, EBB_ShouldDecType_LABEL
-
-    EBB_ShouldDecType_LABEL:    
-        xor ax, ax
-
-        mov al, [byte ptr nextScreen + sType]
-        compare ax, '==', 'O'
-        checkBoolean [boolFlag], EBB_LeaveSoftware_LABEL, EBB_CheckEncrypt_LABEL  
-
-        EBB_CheckEncrypt_LABEL:
-            xor ax, ax
-
-            mov al, [byte ptr nextScreen + sType]
-            compare ax, '==', 'E'
-            checkBoolean [boolFlag], EBB_GoToOpeningScreen_LABEL, EBB_CheckDecrypt_LABEL    
-
-        EBB_CheckDecrypt_LABEL:
-            xor ax, ax       
-             
-            mov al, [byte ptr nextScreen + sType]
-            compare ax, '==', 'D'
-            checkBoolean [boolFlag], EBB_GoToOpeningScreen_LABEL, EBB_Exit_LABEL    
-
-    EBB_DecStage_LABEL:
-        xor ax, ax
-
-        mov al, [byte ptr nextScreen + stage]
-        compare ax, '==', Ascii_4
-        checkBoolean [boolFlag], EBB_LeaveSoftware_LABEL, EBB_ShouldDecNormal_LABEL;because it's the final stage, and the user can't come back, only exit using button
-        
-            EBB_ShouldDecNormal_LABEL:
-                xor ax, ax
-
-                mov al, [byte ptr nextScreen + stage]
-                dec al
-                mov [byte ptr nextScreen + stage], al
-
-                resetButtons
-                resetStatus
-                printBMP    
-
-                jmp EBB_Exit_LABEL
-
-    EBB_GoToOpeningScreen_LABEL:
-        setNextType 'O'
-        resetButtons
-        resetStatus
-        printBMP    
-
-        jmp EBB_Exit_LABEL
-
-    EBB_LeaveSoftware_LABEL:
-        mov ax, 4C00h
-        int 21h
-
-    EBB_Exit_LABEL:
-        ret 0
-endp executeBackButton_PROC
+endp checkMouseClick_PROC
 
 ;===== Loops through one screen type/status life cycle (until change occurs) =====
-;as described in - (/screens/screen logics.png)
-macro runScreen RS_screenName_PARAM
+;as described in - (screen logics.png)
+proc runScreen_PROC
     
-    call updateButtons_PROC
-    call isAnyButtonLit
-    pop ax
+    updateButtons
+    isAnyButtonLit ;Button lit is now in stack, pop needed
+    pop ax    
     checkBoolean [boolFlag], RS_CheckClick_LABEL, RS_Continue_LABEL
-
-    RS_CheckClick_LABEL:
-
+    
+    RS_CheckClick_LABEL: ;Check for click only if a button is lit.
+        checkMouseClick ax
         
     RS_Continue_LABEL:
 
-endm runScreen
+    ret 0
+endp runScreen_PROC

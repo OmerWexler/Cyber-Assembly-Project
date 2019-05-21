@@ -59,7 +59,7 @@ PBMP_ErrorMsg db 'Error', 13, 10,'$'
 
 ;===== Screens =====
 currentScreen db '00000000.bmp', 0
-nextScreen    db 'D4000000.bmp', 0
+nextScreen    db 'D2000000.bmp', 0
 
 sType equ 0 
 stage equ 1 
