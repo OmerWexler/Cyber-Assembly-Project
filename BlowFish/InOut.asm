@@ -13,6 +13,33 @@ macro waitForKeyboardInput
 
 endm waitForKeyboardInput
 
+;===== Read one character from the keyboard buffer (no delay, no wait, no echo) and retuns if the buffer was read from =====
+macro readCharacterFromKeyboard 
+
+    call readCharacterFromKeyboard_PROC
+
+endm readCharacterFromKeyboard
+
+proc readCharacterFromKeyboard_PROC
+        
+    mov ah, 01d
+    int 16h
+
+    jnz RCFK_ReturnTrue_LABEL
+    jz RCFK_ReturnFalse_LABEL
+
+    RCFK_ReturnFalse_LABEL:
+        setBoolFlag [false]
+        jmp RCFK_Exit_LABEL        
+
+    RCFK_ReturnTrue_LABEL:
+        setBoolFlag [true]
+        jmp RCFK_Exit_LABEL
+
+    RCFK_Exit_LABEL:
+    ret 0
+endp readCharacterFromKeyboard_PROC
+
 ;===== Read a string until enter is pressed =====
 macro readStringFromKeyboard RSFK_ReadTarget_PARAM, RSFK_StopAscii_PARAM, RSFK_LengthLimit_PARAM
 
@@ -57,6 +84,55 @@ proc readStringFromKeyboard_PROC
         endBasicProc 0
         ret 6
 endp readStringFromKeyboard_PROC
+
+;===== Reads one character from the keyboard buffer (if available), and copies it into a given var
+macro readKeyboardCharacter RKC_VarToInsertInto_PARAM, RKC_OffsetFromStart_PARAM
+    
+    push 0000d ;allocate room for retur value
+    push RKC_OffsetFromStart_PARAM
+    push offset RKC_VarToInsertInto_PARAM
+    call readKeyboardCharacter_PROC
+
+endm readKeyboardCharacter
+
+RKC_NewOffsetToReturn equ bp + 8
+RKC_OffsetFromStart_VAR equ bp + 6
+RKC_OffsetToInsertInto_VAR equ bp + 4
+proc readKeyboardCharacter_PROC
+    initBasicProc 0
+    
+    xor ax, ax
+
+    mov di, [RKC_OffsetToInsertInto_VAR]
+    add di, [RKC_OffsetFromStart_VAR]
+
+    readCharacterFromKeyboard
+    checkBoolean [boolFlag], RKC_CharacterReadSuccesfuly_LABEL, RKC_Exit_LABEL
+
+    RKC_CharacterReadSuccesfuly_LABEL:
+        compare ax, '==', Ascii_Backspace
+        checkBoolean [boolFlag], RKC_RemoveChar_LABEL, RKC_CopyChar_LABEL
+        
+        RKC_CopyChar_LABEL:
+            mov [byte ptr di], al
+            inc di
+
+            setBoolFlag [true]
+            jmp RKC_Exit_LABEL
+
+        RKC_RemoveChar_LABEL:
+            mov al, 00d
+            mov [byte ptr di], al
+            
+            setBoolFlag [false]
+            jmp RKC_Exit_LABEL
+
+    RKC_Exit_LABEL:
+        mov [RKC_NewOffsetToReturn], di
+
+        endBasicProc 0
+        ret 4
+endp readKeyboardCharacter_PROC
 
 ;===== hides the mouse from the user =====
 macro hideMouse

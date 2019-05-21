@@ -77,16 +77,16 @@ encryptEnabled db 00d
 restartEnabled db 00d 
 
 ;===== Screen hitboxes =====
-;                    LowX , LowY , HighX, HighY, ArcX,  ArcY   Button ID
-backButtonBase dw    0000d, 0172d, 0039d, 0191d, 0191d, 0031d, backButton
+;                    LowX , LowY , HighX, HighY, Button ID
+backButtonBase dw    0000d, 0172d, 0039d, 0191d, backButton
 
-nextButtonBase dw    0280d, 0172d, 0320d, 0191d, 0280d, 0181d, nextButton
+nextButtonBase dw    0280d, 0172d, 0320d, 0191d, nextButton
 
-decryptButtonBase dw 0000d, 0143d, 0107d, 0174d, 0097d, 0174d, decryptButton
+decryptButtonBase dw 0000d, 0143d, 0107d, 0174d, decryptButton
 
-encryptButtonBase dw 0213d, 0143d, 0320d, 0174d, 0213d, 0164d, encryptButton
+encryptButtonBase dw 0213d, 0143d, 0320d, 0174d, encryptButton
 
-restartButtonBase dw 0263d, 0172d, 0320d, 0191d, 0263d, 0181d, restartButton
+restartButtonBase dw 0263d, 0172d, 0320d, 0191d, restartButton
 
 ;===== Mouse =====
 mouseX dw 0000d
@@ -161,5 +161,6 @@ Ascii_X equ 120d
 Ascii_Y equ 121d
 Ascii_Z equ 122d
 Ascii_Enter equ 13d
+Ascii_Backspace equ 8d
 Ascii_$ equ 36d
 Ascii_Dot equ 46d

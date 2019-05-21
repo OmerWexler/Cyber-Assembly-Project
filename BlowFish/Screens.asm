@@ -41,9 +41,7 @@ CIIT_LowX_VAR equ word ptr di
 CIIT_LowY_VAR equ word ptr di + 2d 
 CIIT_HighX_VAR equ word ptr di + 4d
 CIIT_HighY_VAR equ word ptr di + 6d
-CIIT_ArcX_VAR equ word ptr di + 8d
-CIIT_ArcY_VAR equ word ptr di + 10d
-CIIT_ButtonID_VAR equ word ptr di + 12d
+CIIT_ButtonID_VAR equ word ptr di + 8d
 proc checkTile_PROC
     initBasicProc 0
 
@@ -288,7 +286,6 @@ proc checkMouseClick_PROC
         setBoolFlag [true]
 
         resetButtons
-        resetStatus
         printBMP
         jmp CMC_Exit_LABEL
 
@@ -370,3 +367,14 @@ proc compareCurrentScreenProperty_PROC
     endBasicProc 0
     ret 4
 endp compareCurrentScreenProperty_PROC
+
+;===== Sets the is enabled var for all buttons =====
+macro setupButtons SB_Back_PARAM, SB_Next_PARAM, SB_Decrypt_PARAM, SB_Encrypt_PARAM, SB_Restart_PARAM
+ 
+    setButton [backEnabled], SB_Back_PARAM
+    setButton [nextEnabled], SB_Next_PARAM
+    setButton [decryptEnabled], SB_Decrypt_PARAM
+    setButton [encryptEnabled], SB_Encrypt_PARAM
+    setButton [restartEnabled], SB_Restart_PARAM
+
+endm setupButtons

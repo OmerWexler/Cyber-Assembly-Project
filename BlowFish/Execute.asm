@@ -21,6 +21,7 @@ include 'FKeys.asm'
 include 'Graphics.asm'
 include 'Screens.asm'
 include 'Buttons.asm'
+include 'SCNMacros.asm'
 
 macro initAllKeys 
 
@@ -101,30 +102,84 @@ macro prepareRun
 	printBMP
 
 endm prepareRun
+
 start:
 	mov ax, @data
 	mov ds, ax
-	
+
+	l:
+		readKeyboardCharacter nextScreen, 0
+		checkBoolean [boolFlag], exit, l	
+
 	prepareRun	
 
-	EXE_OpeningScreen_LABEL:
+	EXE_OpeningScreen_LABEL: ;=====-===== Opening Screen ==========================================================================================================================================
 
-		setButton [backEnabled], [true]
-		setButton [nextEnabled], [false]
-		setButton [decryptEnabled], [true]
-		setButton [encryptEnabled], [true]
-		setButton [restartEnabled], [false]
+		setupButtons [true], [false], [true], [true], [false]
 
-		OPS_OpeningScreenLoop_LABEL:
+		OPS_OpeningScreen_LOOP: ;=== Opening Screen Loop ===
 			manageCurrentScreen decryptButton, EXE_Decryption_LABEL, encryptButton, EXE_Encryption_LABEL
-				jmp OPS_OpeningScreenLoop_LABEL
+			jmp OPS_OpeningScreen_LOOP
 
 
-	EXE_Decryption_LABEL:
-	EXE_Encryption_LABEL:
+	EXE_Decryption_LABEL: ;=====-===== Decryption screen ==========================================================================================================================================
+		
+		DEC_Intro_LABEL: ;===== Intro =====
+			
+			setupButtons [true], [true], [false], [false], [false]
+			
+			DEC_Intro_LOOP:
+				manageCurrentScreen backButton, EXE_OpeningScreen_LABEL, nextButton, DEC_Name_LABEL
+				jmp DEC_Intro_LOOP
+			
+		DEC_Name_LABEL: ;===== Name Check =====
 
+			setupButtons [true], [true], [false], [false], [false]
+		
+			xor di, di
+			DEC_NameEmpty_LOOP: ;=== Name Empty Loop ===
+				
 
+				manageCurrentScreen backButton, DEC_NameEmpty_LOOP, nextButton, DEC_NameEmpty_LOOP
+				readKeyboardCharacter currentReadFileName, di
+				checkBoolean [boolFlag], DEC_CharacterRead_LABEL, DEC_NameEmpty_LOOP
+			
+				DEC_CharacterRead_LABEL:
+					compare [currentReadFileName + di], Ascii_Backspace, DEC_RemoveCharacter_LABEL:
+					inc di
 
+					DEC_RemoveCharacter_LABEL:
+						mov [currentReadFileName + di]
+
+				jmp DEC_NameEmpty_LOOP
+
+				
+			DEC_NameInValid_LOOP: ;=== Name Invalid Loop ===
+			DEC_NameValid_LOOP: ;=== Name Valid Loop ===
+			
+		DEC_Password_LABEL: ;===== Password =====
+			
+			setupButtons [true], [true], [false], [false], [false]
+		
+			DEC_PasswordEmpty_LABEL: ;=== Password Empty Loop ===
+			DEC_PasswordInvalid_LOOP: ;=== Password Invalid Loop ===
+			DEC_PasswordValid_LOOP: ;=== Password Valid Loop ===
+			
+		DEC_Loading_LABEL: ;===== Loading Screen =====
+			
+			setupButtons [false], [true], [false], [false], [false]
+
+			DEC_LoadingEmpty_LOOP: ;=== Loading Empty Loop ===
+			DEC_LoadingLoaded_LOOP: ;=== Loading Loaded Loop ===
+			
+		DEC_EndGame_LABEL: ;===== End Game *SNAP* =====
+	
+			setupButtons [true], [false], [false], [false], [true]
+
+			DEC_EndGame_LOOP: ;=== End Game *SNAP Loop ===
+			
+
+	EXE_Encryption_LABEL: ;=====-===== Encryption Screens ==========================================================================================================================================
 
 
 exit:
