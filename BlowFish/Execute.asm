@@ -35,6 +35,7 @@ macro initAllKeys
 
 endm initAllKeys
 
+;===== Debugging tool =====
 macro setCurrentReadFileToTester
 	mov [currentReadFileName + 0], 't'
 	mov [currentReadFileName + 1], 'e'
@@ -50,6 +51,7 @@ macro setCurrentReadFileToTester
 
 endm setCurrentReadFileToTester
 
+;===== Debugging tool =====
 macro setCurrentReadFileToGold
 	mov [currentReadFileName + 0], 'G'
 	mov [currentReadFileName + 1], 'o'
@@ -63,6 +65,7 @@ macro setCurrentReadFileToGold
 
 endm setCurrentReadFileToGold
 
+;===== Debugging tool =====
 macro setCurrentReadFileToEarth
 	mov [currentReadFileName + 0], 'E'
 	mov [currentReadFileName + 1], 'a'
@@ -77,6 +80,7 @@ macro setCurrentReadFileToEarth
 
 endm setCurrentReadFileToEarth
 
+;===== Debugging tool =====
 macro setMouse X, Y
 
 	mov ax, X
@@ -87,53 +91,41 @@ macro setMouse X, Y
 	
 endm setMouse
 
-start:
-	mov ax, @data
-	mov ds, ax
+macro prepareRun
 
-	; setCurrentReadFileToEarth
-	
-	; copyFileTypeToAlgorithmFiles currentReadFileName
-
-	; initAllKeys
-
-	; resetCurrentReadFilePointer
-
-	; runAlgorithm 'E'
-
-	; createDataFile
-
-	; retrieveDataFile
-
-	; copyFileName currentReadFileName, encryptedFileName
-
-	; runAlgorithm 'D'
-	
 	switchGraphicsMode 'g'
-	
+		
 	initMouse
-	
 	showMouse
 		
 	printBMP
 
-	setButton [backEnabled], [true]
-	setButton [nextEnabled], [true]
-	setButton [decryptEnabled], [false]
-	setButton [encryptEnabled], [false]
-	setButton [restartEnabled], [false]
+endm prepareRun
+start:
+	mov ax, @data
+	mov ds, ax
+	
+	prepareRun	
 
-	; setMouse 20, 180
-	; call updateButtons_PROC
+	EXE_OpeningScreen_LABEL:
 
-	; setMouse 300, 150
-	; call updateButtons_PROC	
+		setButton [backEnabled], [true]
+		setButton [nextEnabled], [false]
+		setButton [decryptEnabled], [true]
+		setButton [encryptEnabled], [true]
+		setButton [restartEnabled], [false]
 
-	l:
-		readMouse
-		call runScreen_PROC
-		jmp l
-	; waitForKeyboardInput
+		OPS_OpeningScreenLoop_LABEL:
+			manageCurrentScreen decryptButton, EXE_Decryption_LABEL, encryptButton, EXE_Encryption_LABEL
+				jmp OPS_OpeningScreenLoop_LABEL
+
+
+	EXE_Decryption_LABEL:
+	EXE_Encryption_LABEL:
+
+
+
+
 
 exit:
 mov ax, 4C00h

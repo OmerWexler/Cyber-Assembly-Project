@@ -157,8 +157,11 @@ endm isAnyButtonLit
 IBAL_ReturnValue_VAR equ bp + 4
 proc isAnyButtonLit_PROC
     initBasicProc 0
-    setBoolFlag [false]
 
+    setBoolFlag [false]
+    xor ax, ax
+    mov [IBAL_ReturnValue_VAR], ax
+    
     mov cx, 5d
     IBAL_CheckName_LABEL:
 
@@ -168,7 +171,7 @@ proc isAnyButtonLit_PROC
         xor ax, ax
 
         mov al, [byte ptr currentScreen + di]
-        compare ax, '==', Ascii_1
+        compare ax, '==', '1'
         checkBoolean [boolFlag], IBAL_ReturnTrue_LABEL, IBAL_ContinueLoop_LABEL
         
         IBAL_ContinueLoop_LABEL:
@@ -184,17 +187,19 @@ proc isAnyButtonLit_PROC
 
     IABL_Exit_LABEL:
     endBasicProc 0
-    ret 
+    ret 0
 endp isAnyButtonLit_PROC
 
 ;===== Checks for a mouse click =====
 macro checkMouseClick CMC_ButtonLit_PARAM
     
+    push 0000d ;allocate room for return value
     push CMC_ButtonLit_PARAM
     call checkMouseClick_PROC
 
 endm checkMouseClick
 
+CMC_ButtonExecuted_VAR equ bp + 6
 CMC_ButtonToExecute_VAR equ bp + 4
 proc checkMouseClick_PROC
     initBasicProc 0
@@ -211,7 +216,12 @@ proc checkMouseClick_PROC
             
             CMC_ExecuteBack_LABEL:
                 call executeBackButton_PROC
-                jmp CMC_Exit_LABEL
+                
+                xor ax, ax
+                mov ax, backButton
+                mov [CMC_ButtonExecuted_VAR], ax 
+                 
+                jmp CMC_Print_LABEL
 
 
 
@@ -221,7 +231,12 @@ proc checkMouseClick_PROC
 
             CMC_ExecuteNext_LABEL:
                 call executeNextButton_PROC
-                jmp CMC_Exit_LABEL
+                
+                xor ax, ax
+                mov ax, nextButton
+                mov [CMC_ButtonExecuted_VAR], ax
+
+                jmp CMC_Print_LABEL
 
 
                 
@@ -232,7 +247,12 @@ proc checkMouseClick_PROC
                 
             CMC_ExecuteDecrypt_LABEL:
                 call executeDecryptButton_PROC
-                jmp CMC_Exit_LABEL
+
+                xor ax, ax
+                mov ax, decryptButton
+                mov [CMC_ButtonExecuted_VAR], ax
+
+                jmp CMC_Print_LABEL
 
 
 
@@ -242,37 +262,111 @@ proc checkMouseClick_PROC
                 
             CMC_ExecuteEncrypt_LABEL:
                 call executeEncryptButton_PROC
-                jmp CMC_Exit_LABEL
+                
+                xor ax, ax
+                mov ax, encryptButton
+                mov [CMC_ButtonExecuted_VAR], ax
+                
+                jmp CMC_Print_LABEL
 
 
                 
         CMC_CheckRestart_LABEL:
             compare ax, '==', restartButton
-            checkBoolean [boolFlag], CMC_ExecuteRestart_LABEL, CMC_Exit_LABEL
+            checkBoolean [boolFlag], CMC_ExecuteRestart_LABEL, CMC_ReturnFalse_LABEL
                 
             CMC_ExecuteRestart_LABEL:
                 call executeRestartButton_PROC
-                jmp CMC_Exit_LABEL
+
+                xor ax, ax
+                mov ax, restartButton
+                mov [CMC_ButtonExecuted_VAR], ax
+
+                jmp CMC_Print_LABEL
                 
-                
+    CMC_Print_LABEL:
+        setBoolFlag [true]
+
+        resetButtons
+        resetStatus
+        printBMP
+        jmp CMC_Exit_LABEL
+
+    CMC_ReturnFalse_LABEL:
+        setBoolFlag [false]
+        jmp CMC_Exit_LABEL
+
     CMC_Exit_LABEL:
     endBasicProc 0
     ret 2
 endp checkMouseClick_PROC
 
 ;===== Loops through one screen type/status life cycle (until change occurs) =====
-;as described in - (screen logics.png)
-proc runScreen_PROC
+;as described in - (screens/screen logics.png)
+macro manageCurrentScreen MCS_ButtonToSwitch1_PARAM, MCS_LabelIfSwitch1_PARAM, MCS_ButtonToSwitch2_PARAM, MCS_LabelIfSwitch2_PARAM
+
+    push 0000d ;allocate return room
+    call manageCurrentScreen_PROC
+
+    pop ax
+
+    compare ax, '==', MCS_ButtonToSwitch1_PARAM
+    checkBooleanSingleJump [boolFlag], MCS_LabelIfSwitch1_PARAM
     
+    compare ax, '==', MCS_ButtonToSwitch2_PARAM
+    checkBooleanSingleJump [boolFlag], MCS_LabelIfSwitch2_PARAM
+
+endm manageCurrentScreen
+
+MCS_ButtonPressed_VAR equ bp + 4
+proc manageCurrentScreen_PROC
+    initBasicProc 0
+
+    readMouse
     updateButtons
+
     isAnyButtonLit ;Button lit is now in stack, pop needed
     pop ax    
-    checkBoolean [boolFlag], RS_CheckClick_LABEL, RS_Continue_LABEL
-    
-    RS_CheckClick_LABEL: ;Check for click only if a button is lit.
-        checkMouseClick ax
-        
-    RS_Continue_LABEL:
 
-    ret 0
-endp runScreen_PROC
+    checkBoolean [boolFlag], MCS_CheckClick_LABEL, MCS_SkipClickCheck_LABEL
+    
+    MCS_CheckClick_LABEL: ;Check for click only if a button is lit.
+        
+        checkMouseClick ax
+        pop ax
+        mov [MCS_ButtonPressed_VAR], ax    
+
+    MCS_SkipClickCheck_LABEL:
+
+
+    MCS_Exit_LABEL:
+        endBasicProc 0
+        ret 0
+endp manageCurrentScreen_PROC
+
+;===== Check current screen type and sets boolFlag accordigly =====
+macro compareCurrentScreenProperty CCSP_PropertyToCheck_PARAM, CCSP_DataToCheckFor_PARAM
+    
+    push CCSP_DataToCheckFor_PARAM
+    push CCSP_PropertyToCheck_PARAM
+    call compareCurrentScreenProperty_PROC
+
+endm compareCurrentScreenProperty
+
+CCSP_DataToCheckFor_VAR equ bp + 6
+CCSP_PropertyToCheck_VAR equ bp + 4
+proc compareCurrentScreenProperty_PROC
+    initBasicProc 0
+
+    xor ax, ax
+    xor dx, dx
+
+    mov di, [CCSP_PropertyToCheck_VAR]
+
+    mov al, [byte ptr currentScreen + di]
+    mov dx, [CCSP_DataToCheckFor_VAR]
+    compare ax, '==', dx
+
+    endBasicProc 0
+    ret 4
+endp compareCurrentScreenProperty_PROC

@@ -195,3 +195,14 @@ CIB_Return_LABEL:
     endBasicProc 0
     ret 6
 endp checkIfBetween_PROC
+
+;===== Check boolean and jump to correct label =====
+macro checkBooleanSingleJump CBSJ_boolean_PARAM, CBSJ_labelToTrue_PARAM
+
+    push ax
+    mov al, [true]
+    cmp CBSJ_boolean_PARAM, al
+    pop ax
+    je CBSJ_labelToTrue_PARAM
+
+endm checkBooleanSingleJump

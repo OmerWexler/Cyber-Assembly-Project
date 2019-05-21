@@ -33,35 +33,20 @@ proc executeBackButton_PROC
 
         mov al, [byte ptr nextScreen + stage]
         compare ax, '==', Ascii_4
-        checkBoolean [boolFlag], EBB_LeaveSoftware_LABEL, EBB_ShouldDecNormal_LABEL;because it's the final stage, and the user can't come back, only exit using button
+        checkBoolean [boolFlag], EBB_LeaveSoftware_LABEL, EBB_ShouldDecNormal_LABEL ;because it's the final stage, and the user can't come back, only exit using button
         
             EBB_ShouldDecNormal_LABEL:
                 xor ax, ax
 
                 mov al, [byte ptr nextScreen + stage]
                 dec al
-                mov [byte ptr nextScreen + stage], al
-
-                resetButtons
-                resetStatus
-                printBMP    
+                mov [byte ptr nextScreen + stage], al    
 
                 jmp EBB_Exit_LABEL
 
     EBB_GoToOpeningScreen_LABEL:
         setNextType 'O'
-        resetButtons
-        resetStatus
-
-        compareFileNames nextScreen, currentScreen
-        checkBoolean [boolFlag], EBB_NoUpdate_LABEL, EBB_IsUpdate_LABEL
-
-        EBB_IsUpdate_LABEL:
-            printBMP 
-            jmp EBB_Exit_LABEL
-
-        EBB_NoUpdate_LABEL:
-            jmp EBB_Exit_LABEL
+        jmp EBB_Exit_LABEL
 
     EBB_LeaveSoftware_LABEL:
         mov ax, 4C00h
@@ -71,48 +56,44 @@ proc executeBackButton_PROC
         ret 0
 endp executeBackButton_PROC
 
-
+;===== Runs the logic of what happnes when you press the next Button =====
 proc executeNextButton_PROC
     initBasicProc 0
 
-    setBoolFlag [false]
-
-    mov al, [byte ptr currentScreen]
+    xor ax, ax
+    mov al, [byte ptr nextScreen + stage]
     inc al
-    mov [byte ptr currentScreen], al
+    mov [byte ptr nextScreen  + stage], al
 
-    resetButtons
-    resetStatus
-    printBMP
-    
     endBasicProc 0
     ret 0
 endp executeNextButton_PROC
 
-
+;===== Runs the logic of what happnes when you press the decrypt Button =====
 proc executeDecryptButton_PROC
     initBasicProc 0
 
-    setBoolFlag [false]
-
     setNextType 'D'
-    resetButtons
 
     endBasicProc 0
     ret 0
 endp executeDecryptButton_PROC
 
+;===== Runs the logic of what happnes when you press the encrypt Button =====
 proc executeEncryptButton_PROC
     initBasicProc 0
 
+    setNextType 'E'
 
     endBasicProc 0
     ret 0
 endp executeEncryptButton_PROC
 
+;===== Runs the logic of what happnes when you press the restart Button =====
 proc executeRestartButton_PROC
     initBasicProc 0
 
+    setNextType 'O'
 
     endBasicProc 0
     ret 0

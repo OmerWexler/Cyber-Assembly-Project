@@ -58,8 +58,8 @@ PBMP_ScrLine db SCREEN_WIDTH dup (0)
 PBMP_ErrorMsg db 'Error', 13, 10,'$'
 
 ;===== Screens =====
-currentScreen db '00000000.bmp', 0
-nextScreen    db 'D2000000.bmp', 0
+currentScreen db 'O0010000.bmp', 0
+nextScreen    db 'O0010000.bmp', 0
 
 sType equ 0 
 stage equ 1 
