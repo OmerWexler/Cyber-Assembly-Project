@@ -1,11 +1,12 @@
 ;===== Read from keyboard buffer =====
 macro waitForKeyboardInput
     
-	;wait for key
+    ;clear buffer
     mov ah, 0Ch
     mov al, 0d
     int 21h
 
+    ;wait for key
     mov ah, 1d
     int 21h
     
@@ -22,8 +23,11 @@ endm readCharacterFromKeyboard
 
 proc readCharacterFromKeyboard_PROC
         
-    mov ah, 01d
-    int 16h
+    mov ah, 06h
+    mov dl, 255
+    int 21h
+    
+    mov ah, 00d
 
     jnz RCFK_ReturnTrue_LABEL
     jz RCFK_ReturnFalse_LABEL
@@ -86,19 +90,19 @@ proc readStringFromKeyboard_PROC
 endp readStringFromKeyboard_PROC
 
 ;===== Reads one character from the keyboard buffer (if available), and copies it into a given var
-macro readKeyboardCharacter RKC_VarToInsertInto_PARAM, RKC_OffsetFromStart_PARAM
+macro readStringFromKeyboardITER RKC_VarToInsertInto_PARAM, RKC_OffsetFromStart_PARAM
     
     push 0000d ;allocate room for retur value
     push RKC_OffsetFromStart_PARAM
     push offset RKC_VarToInsertInto_PARAM
-    call readKeyboardCharacter_PROC
+    call readStringFromKeyboardITER_PROC
 
-endm readKeyboardCharacter
+endm readStringFromKeyboardITER
 
 RKC_NewOffsetToReturn equ bp + 8
 RKC_OffsetFromStart_VAR equ bp + 6
 RKC_OffsetToInsertInto_VAR equ bp + 4
-proc readKeyboardCharacter_PROC
+proc readStringFromKeyboardITER_PROC
     initBasicProc 0
     
     xor ax, ax
@@ -111,28 +115,47 @@ proc readKeyboardCharacter_PROC
 
     RKC_CharacterReadSuccesfuly_LABEL:
         compare ax, '==', Ascii_Backspace
-        checkBoolean [boolFlag], RKC_RemoveChar_LABEL, RKC_CopyChar_LABEL
+        checkBoolean [boolFlag], RKC_BackSpace_LABEL, RKC_CheckEnter_LABEL
         
-        RKC_CopyChar_LABEL:
-            mov [byte ptr di], al
-            inc di
+        RKC_CheckEnter_LABEL:
+            compare ax, '==', Ascii_Enter
+            checkBoolean [boolFlag], RKC_ReturnEndOfString_LABEL, RKC_InsertChar_LABEL
 
-            setBoolFlag [true]
-            jmp RKC_Exit_LABEL
+            RKC_InsertChar_LABEL:
+                mov [byte ptr di], al
+                inc di
 
-        RKC_RemoveChar_LABEL:
-            mov al, 00d
-            mov [byte ptr di], al
+                jmp RKC_ReturnNotEndOfString_LABEL
+
+        RKC_BackSpace_LABEL:
+            compare di, '==', 0d
+            checkBoolean [boolFlag], RKC_RemoveCharacter_LABEL, RKC_DecIndex_LABEL
+
+            RKC_DecIndex_LABEL:
+                dec di
+                jmp RKC_RemoveCharacter_LABEL
             
-            setBoolFlag [false]
-            jmp RKC_Exit_LABEL
+            RKC_RemoveCharacter_LABEL:
+                mov al, 00d
+                mov [byte ptr di], al
+            
+            jmp RKC_ReturnNotEndOfString_LABEL
 
+    RKC_ReturnEndOfString_LABEL:
+        setBoolFlag [true]
+        jmp RKC_Exit_LABEL
+                
+    RKC_ReturnNotEndOfString_LABEL:
+        setBoolFlag [false]
+        jmp RKC_Exit_LABEL
+                
     RKC_Exit_LABEL:
+        sub di, [RKC_OffsetToInsertInto_VAR]
         mov [RKC_NewOffsetToReturn], di
 
         endBasicProc 0
         ret 4
-endp readKeyboardCharacter_PROC
+endp readStringFromKeyboardITER_PROC
 
 ;===== hides the mouse from the user =====
 macro hideMouse

@@ -21,7 +21,6 @@ include 'FKeys.asm'
 include 'Graphics.asm'
 include 'Screens.asm'
 include 'Buttons.asm'
-include 'SCNMacros.asm'
 
 macro initAllKeys 
 
@@ -107,9 +106,12 @@ start:
 	mov ax, @data
 	mov ds, ax
 
+	xor di, di
+
 	l:
-		readKeyboardCharacter nextScreen, 0
-		checkBoolean [boolFlag], exit, l	
+		readStringFromKeyboardITER nextScreen, di
+		pop di
+		checkBoolean [boolFlag], exit, l
 
 	prepareRun	
 
@@ -141,15 +143,11 @@ start:
 				
 
 				manageCurrentScreen backButton, DEC_NameEmpty_LOOP, nextButton, DEC_NameEmpty_LOOP
-				readKeyboardCharacter currentReadFileName, di
+				; readKeyboardCharacter currentReadFileName, di
 				checkBoolean [boolFlag], DEC_CharacterRead_LABEL, DEC_NameEmpty_LOOP
 			
 				DEC_CharacterRead_LABEL:
-					compare [currentReadFileName + di], Ascii_Backspace, DEC_RemoveCharacter_LABEL:
-					inc di
-
-					DEC_RemoveCharacter_LABEL:
-						mov [currentReadFileName + di]
+					
 
 				jmp DEC_NameEmpty_LOOP
 
