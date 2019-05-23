@@ -1,4 +1,3 @@
-
 ;===== Ascii =====
 Ascii_0 equ 48d
 Ascii_1 equ 49d

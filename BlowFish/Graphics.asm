@@ -36,15 +36,33 @@ proc switchGraphicsMode_PROC
 		ret 2
 endp switchGraphicsMode_PROC
 
-;===== Sets the BMP_CharBuffer to the requested name and print a character by an XY set =====
-macro setBMPCharToPrint SBCT_CharToPrint_PARAM
+;===== Prints a BMP photo at a given location ===== 
+macro printBMP PBMP_Name_PARAM, PBMP_X_PARAM, PBMP_Y_PARAM, PBMP_ColorToFilter
 	
-	mov al, SBCT_CharToPrint_PARAM
-	mov [byte ptr BMP_CharBMPBuffer], al
+	push PBMP_X_PARAM
+	push PBMP_Y_PARAM
 
-endm setBMPCharToPrint
+	openFile PBMP_Name_PARAM, PBMP_TempHandle 'r'
+	call ReadHeader
+	call ReadPalette
+	call CopyPal
+	
+	hideMouse
+	
+	pop dx
+	pop cx
 
-;===== Uses the printBMPByPosition in order to print a character on screen =====
+	push PBMP_ColorToFilter
+	push cx
+	push dx
+	call CopyBitmapForPrintByPosition
+	
+	showMouse
+	closeFile [PBMP_TempHandle]
+
+endm printBMP
+
+;===== Uses the CopyBitmapForPrintByPosition in order to print a character on screen =====
 macro printBMPCharacter PBC_Character_PARAM, PBC_X_PARAM, PBC_Y_PARAM
 
 	push PBC_Character_PARAM
@@ -63,106 +81,53 @@ proc printBMPCharacter_PROC
 	xor ax, ax
 	mov ax, [PBC_Character_VAR]
 
-	setBMPCharToPrint al
-	openFile BMP_CharBMPBuffer, PBMP_TempHandle, 'r'
-	call ReadHeader
-	call ReadPalette
-	call CopyPal
-
-	hideMouse
-	mov ax, [PBC_Character_VAR]
-	push bx
-
-	checkIfBetween ax, Ascii_0, Ascii_9
-	checkBooleanSingleJump [boolFlag], PBC_NumberCharacter_LABEL
+	mov al, [PBC_Character_VAR]
+	mov [byte ptr BMP_CharBMPBuffer], al
 
 	checkIfBetween ax, Ascii_CA, Ascii_CZ
-	checkBooleanSingleJump [boolFlag], PBC_CapitalCharacter_LABEL
-	
-	checkIfBetween ax, Ascii_A, Ascii_Z
-	checkBoolean [boolFlag], PBC_LowerCaseCharacter_LABEL, PBC_Exit_LABEL
+	checkBoolean [boolFlag], PBC_PrintCapital, PBC_PrintRegular
 
-	PBC_NumberCharacter_LABEL:
-		mov si, [PBC_Character_VAR]
-		sub si, Ascii_0
-		
-		mov ax, 4d
-		mul si
-		mov si, ax
+	PBC_PrintCapital:
+		mov al, 'C'
+		mov [byte ptr BMP_CharBMPBuffer + 1d], al 
+		jmp PBC_StartPrePrint_LABEL
 
-		add si, offset BMP_0_Resolution
+	PBC_PrintRegular:
+		compare ax, '==', '.'
+		checkBooleanSingleJump [boolFlag], PBC_PrintDot
 
-		jmp PBC_Print_LABEL
+		mov al, '0'
+		mov [byte ptr BMP_CharBMPBuffer + 1d], al
+		jmp PBC_StartPrePrint_LABEL
 
-	PBC_CapitalCharacter_LABEL:
+		PBC_PrintDot:
+			mov [word ptr BMP_CharBMPBuffer], 'OD'
+			jmp PBC_StartPrePrint_LABEL
 
-		mov si, [PBC_Character_VAR]
-		sub si, Ascii_CA
-		
-		mov ax, 4d
-		mul si
-		mov si, ax
 
-		add si, offset BMP_CA_Resolution
+	PBC_StartPrePrint_LABEL:
+		validateFile BMP_CharBMPBuffer
+		xor [boolFlag], 01d
+		checkBooleanSingleJump [boolFlag], PBC_Exit_LABEL
 
-		jmp PBC_Print_LABEL
-
-	PBC_LowerCaseCharacter_LABEL:
-		mov si, [PBC_Character_VAR]
-		sub si, Ascii_A
-		
-		mov ax, 4d
-		mul si
-		mov si, ax
-
-		add si, offset BMP_A_Resolution
-
-		jmp PBC_Print_LABEL
-
-	PBC_Print_LABEL:
-		mov ax, [PBC_X_VAR]
-		push ax
-		mov ax, [PBC_Y_VAR]
-		push ax
-		push [word ptr si]
-		push [word ptr si + 2d]
-		call CopyBitmapForPrintByPosition
+		mov cx, [PBC_X_VAR]
+		mov dx, [PBC_Y_VAR]
+		printBMP BMP_CharBMPBuffer, cx, dx, 255
 
 		showMouse
-		call CloseBMP
+		closeFile [PBMP_TempHandle]
 
 	PBC_Exit_LABEL:
 		endBasicProc 0
 		ret 6
 endp printBMPCharacter_PROC
 
-;===== Prints the requested picture in the requested XY and RES, while removing all white pixels =====
-macro printBMPByPosition PBMPBP_Name_PARAM, PBMPBP_X_PARAM, PBMPBP_Y_PARAM, PBMPBP_W_PARAM, PBMPBP_H_PARAM
-	
-	openFile PBMPBP_Name_PARAM, PBMP_TempHandle, 'r'
-	call ReadHeader	
-	call ReadPalette	
-	call CopyPal
-	
-	hideMouse
-
-	push PBMPBP_X_PARAM
-	push PBMPBP_Y_PARAM
-	push PBMPBP_W_PARAM
-	push PBMPBP_H_PARAM
-	call CopyBitmapForPrintByPosition
-	
-	showMouse
-	call CloseBMP
-
-endm printBMPByPosition
-
 ;===== Prints the current bmp picture in name buffer =====
-macro printBMP
-	call printBMP_PROC
+macro printScreen
+	call printScreen_PROC
 endm 
 
-proc printBMP_PROC
+proc printScreen_PROC
 	initBasicProc 0
 
 	validateFile nextScreen
@@ -170,50 +135,55 @@ proc printBMP_PROC
 	
 	PBMP_Filevalid_LABEL:
 		copyFileName currentScreen, nextScreen
-		call OpenBMP   
-		call ReadHeader
-		call ReadPalette
-		call CopyPal
-		hideMouse
-		call CopyBitmap
-		showMouse
-		call CloseBMP
+
+		printBMP currentScreen, 0, 0, 'N'
 
 	PBMP_FileInvalid_LABEL:
 		copyFileName nextScreen, currentScreen
 
 		endBasicProc 0
 		ret 0
-endp printBMP_PROC
-;---------------------------------------------------------------;
-proc OpenBMP 
-	mov ah, 3Dh    
-	xor al, al
-	mov dx, offset currentScreen
-	int 21h
-	mov [PBMP_TempHandle], ax
-	ret
-endp OpenBMP
-;---------------------------------------------------------------;
+endp printScreen_PROC
+
+;===== Reads the header from the bmp file and allocate all the critical variables using it (e.g width. height) =====
 proc ReadHeader
-; Read BMP file header, 54 bytes
+	; Read BMP file header, 54 bytes
 	mov ah,3fh
 	mov bx, [PBMP_TempHandle]
 	mov cx,54
 	mov dx,offset PBMP_TempHeader
 	int 21h
+	
+	mov bx,offset PBMP_TempHeader
+	add bx,18
+	mov ax,[word ptr bx]
+	mov [PBMP_Width],ax
+	add bx,4
+	mov ax,[word ptr bx]
+	mov [PBMP_Height],ax
+	
+	mov bl,4
+	mov ax,[PBMP_Width]
+	div bl
+	mov al,4
+	sub al,ah
+	mov ah,0
+	mov [PBMP_Padding],ax
 	ret
 endp ReadHeader
-;---------------------------------------------------------------;
+
+;===== Reads the color palette from the current BMP File ===== 
 proc ReadPalette
 	; Read BMP file color palette, 256 colors * 4 bytes (400h)
 	mov ah,3fh
+	mov bx, [PBMP_TempHandle]
 	mov cx,400h
 	mov dx,offset PBMP_TempPallete
 	int 21h
 	ret
 endp ReadPalette 
-;---------------------------------------------------------------;
+
+;===== Copies the palette from the buffer into the graphic memory ===== 
 proc CopyPal
 	; Copy the colors palette to the video memory
 	; The number of the first color should be sent to port 3C8h
@@ -227,119 +197,138 @@ proc CopyPal
 	; Copy palette itself to port 3C9h 
 	inc dx
 	
-PalLoop:
-; Note: Colors in a BMP file are saved as BGR values rather than RGB.
-	mov al,[si+2] ; Get red value.
-	shr al,2 ; Max. is 255, but video palette maximal
-	 ; value is 63. Therefore dividing by 4.
-	out dx,al ; Send it.
-	mov al,[si+1] ; Get green value.
-	shr al,2
-	out dx,al ; Send it.
-	mov al,[si] ; Get blue value
-	shr al,2
-	out dx,al ; Send it.
-	add si,4 ; Point to next color.
-	 ; (There is a null chr. after every color.)
-	 loop PalLoop
+	PalLoop:
+	; Note: Colors in a BMP file are saved as BGR values rather than RGB.
+		
+		mov al,[si+2] ; Get red value.
+		shr al,2 ; Max. is 255, but video palette maximal
+		; value is 63. Therefore dividing by 4.
+		out dx,al ; Send it.
+		
+		mov al,[si+1] ; Get green value.
+		shr al,2
+		out dx,al ; Send it.
+		
+		mov al,[si] ; Get blue value
+		shr al,2
+		out dx,al ; Send it.
+		
+		add si,4 ; Point to next color (There is a null chr. after every color.)
+		loop PalLoop
 	ret
 endp CopyPal
-;---------------------------------------------------------------;
-proc CopyBitmap
-	; BMP graphics are saved upside-down.
-	; Read the graphic line by line (200 lines in VGA format),
-	; displaying the lines from bottom to top.
-	mov ax, 0A000h
-	mov es, ax
-	mov cx, SCREEN_HEIGHT
-	
-PrintBMPLoop:
-	push cx 
-	; di = cx*320, point to the correct screen line
-	mov di,cx
-	shl cx,6
-	shl di,8
-	add di,cx
-	; Read one line
-	mov ah,3fh
-	mov cx,SCREEN_WIDTH
-	mov dx,offset PBMP_ScrLine
-	int 21h
-	cld ; Clear direction flag, for movsb
-	mov cx,SCREEN_WIDTH
-	mov si,offset PBMP_ScrLine 
-	; Copy one line into video memory
-	rep movsb ; Copy line to the screen
-	;rep movsb is same as the following code:
-	;mov es:di, ds:si
-	;inc si
-	;inc di
-	;dec cx
-	;loop until cx=0
-	pop cx
-	loop PrintBMPLoop
-	ret
-endp CopyBitmap  
-;---------------------------------------------------------------;
-proc CloseBMP
-	mov ah, 3Eh
-	mov bx, [PBMP_TempHandle]
-	int 21h
-	ret
-endp CloseBMP
-;---------------------------------------------------------------;
-CBMPP_x_VAR equ bp + 10
-CBMPP_y_VAR equ bp + 8
-CBMPP_w_VAR equ bp + 6
-CBMPP_h_VAR equ bp + 4
+
+CBMPP_ColorToFilter_VAR equ bp + 8
+CBMPP_x_VAR equ bp + 6
+CBMPP_y_VAR equ bp + 4
 proc CopyBitmapForPrintByPosition	
-	push bp
-	mov bp, sp 
-	;same code as CopyBitmap except the x,y positions 
-	;specifies res for (h * w) for any pic
+	initBasicProc 0
 	mov ax, 0A000h
 	mov es, ax
-	mov cx, [CBMPP_h_VAR]
+	mov cx, [PBMP_Height]
 
-	CBMPP_PositionPrintBMPLoop_LABEL:
-	push cx
-	
-	add cx, [CBMPP_y_VAR] ;y
-	mov di,cx
-	shl cx,6
-	shl di,8
-	add di,cx
-	add di, [CBMPP_x_VAR] ; x
-	
-	mov cx, [CBMPP_w_VAR]
-	inc cx
-	mov ah,3fh
-	mov dx,	offset PBMP_ScrLine
-	int 21h
+	PrintBMPLoopA:
+		push cx
+		dec cx
+		; di = cx*320, point to the correct screen line
+		add cx, [CBMPP_y_VAR]
+		mov di, cx
+		shl cx, 6
+		shl di, 8
+		add di, cx
+		add di, [CBMPP_x_VAR]
 
-	cld 
-	mov cx, [CBMPP_w_VAR]
-	mov si,offset PBMP_ScrLine
-		; rep movsb 
-	CBMPP_PrintLineLoop_LABEL:
-		mov al, [byte ptr si]
-		cmp al, 230d
-		ja CBMPP_SkipCopy_LABEL
+		; Read one line
+		mov ah, 3fh
+		mov cx, [PBMP_Width]
+		mov dx, offset PBMP_ScrLine
+		int 21h
+
+		;clear trash
+		cmp [PBMP_Padding], 4
+		je CBMPP_PrintOnScreen_LABEL
+
+		mov ah, 3fh
+		mov cx, [PBMP_Padding]
+		mov dx, offset PBMP_TrashPadding
+		int 21h
+	CBMPP_PrintOnScreen_LABEL:
+		cld
+		mov cx,[PBMP_Width]
+		mov si,offset PBMP_ScrLine
+
+		CBMPP_PrintLineLoop_LABEL:
+
+			xor ax, ax
+			mov ax, [CBMPP_ColorToFilter_VAR]
+			cmp ax, 'N'
+			je CBMPP_CopyPixel_LABEL
+
+			xor ax, ax
+			mov al, [byte ptr si]
+			cmp ax, [CBMPP_ColorToFilter_VAR]
+			je CBMPP_SkipCopy_LABEL
+			
+			CBMPP_CopyPixel_LABEL:
+				movsb
+				jmp CBMPP_ContinueLoop_LABEL
+
+			CBMPP_SkipCopy_LABEL:
+				inc si
+				inc di
+				jmp CBMPP_ContinueLoop_LABEL
+
+			CBMPP_ContinueLoop_LABEL:
+				loop CBMPP_PrintLineLoop_LABEL
 		
-		movsb
-		jmp CBMPP_ContinueLoop_LABEL
+		pop cx
+		loop PrintBMPLoopA
 
-		CBMPP_SkipCopy_LABEL:
-			inc si
-			inc di
-			jmp CBMPP_ContinueLoop_LABEL
-
-		CBMPP_ContinueLoop_LABEL:
-
-		loop CBMPP_PrintLineLoop_LABEL
-
-	pop cx
-	loop CBMPP_PositionPrintBMPLoop_LABEL
-	pop bp
-	ret 8
+	endBasicProc 0
+	ret 6
 endp CopyBitmapForPrintByPosition
+
+;===== Prints a string to the screen using BMP characters (at a given XY) =====
+macro printString PS_StringToPrint_PARAM, PS_X_PARAM, PS_Y_PARAM
+
+	push offset PS_StringToPrint_PARAM
+	push PS_X_PARAM
+	push PS_Y_PARAM
+	call printString_PROC
+	
+endm printString
+
+PS_StringToPrintOffset_VAR equ bp + 8
+PS_X_VAR equ bp + 6
+PS_Y_VAR equ bp + 4
+proc printString_PROC
+	initBasicProc 0	
+	
+	mov si, [PS_StringToPrintOffset_VAR]
+
+	PS_PrintLoop_LABEL:
+		xor ax, ax
+		mov al, [si]
+		inc si
+
+		compare ax, '==', 0d
+		checkBooleanSingleJump [boolFlag], PS_Exit_LABEL
+		
+		push si
+
+		mov cx, [PS_X_VAR]
+		mov dx, [PS_Y_VAR]
+		printBMPCharacter ax, cx, dx
+
+		mov ax, [PBMP_Width]
+		inc ax
+		add [PS_X_VAR], ax
+
+		pop si
+	
+		jmp PS_PrintLoop_LABEL
+
+	PS_Exit_LABEL:
+	endBasicProc 0
+	ret 6
+endp printString_PROC

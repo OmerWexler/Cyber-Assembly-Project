@@ -149,7 +149,7 @@ proc updateButtons_PROC
         checkBoolean [boolFlag], UB_Finish_LABEL, UB_UpdateNeeded_LABEL
         
         UB_UpdateNeeded_LABEL:
-            printBMP
+            printScreen
             jmp UB_Finish_LABEL
 
     UB_Finish_LABEL:
@@ -315,7 +315,7 @@ proc checkMouseClick_PROC
         setBoolFlag [true]
 
         resetButtons
-        printBMP
+        printScreen
         
         jmp CMC_Exit_LABEL
 

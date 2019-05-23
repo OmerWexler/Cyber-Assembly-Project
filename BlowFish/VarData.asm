@@ -58,6 +58,12 @@ PBMP_TempHandle dw ?
 PBMP_ScrLine db SCREEN_WIDTH dup (0)
 PBMP_ErrorMsg db 'Error', 13, 10,'$'
 
+PBMP_Height dw 0d
+PBMP_Width dw 0d
+PBMP_Padding dw 0d
+
+PBMP_TrashPadding db 3 dup (0) 
+
 ;===== Screens =====
 currentScreen db 'O0000000.bmp', 0
 nextScreen    db 'O0000000.bmp', 0

@@ -100,7 +100,7 @@ macro prepareRun
 	initMouse
 	showMouse
 		
-	printBMP
+	printScreen
 
 endm prepareRun
 
@@ -112,10 +112,11 @@ start:
 
 	prepareRun	
 	
-	printBMPCharacter 'S', 160d, 100d
+	; printBMPCharacter '.', 160d, 100d
+	printString BMP_TesterString, 0d, 100d
+	printString BMP_TesterString2, 0d, 113d
 	waitForKeyboardInput
 	
-	jmp exit
 	EXE_OpeningScreen_LABEL: ;=====-===== Opening Screen ==========================================================================================================================================
 
 		setupButtons [true], [false], [true], [true], [false]
@@ -159,7 +160,7 @@ start:
 				
 
 			; DEC_NameInValid_LABEL: ;=== Name InValid ===
-				printBMP
+				printScreen
 				
 				DEC_NameInValid_LOOP:
 					
@@ -168,7 +169,7 @@ start:
 
 			DEC_NameValid_LOOP: ;=== Name Valid Loop ===
 				setNextScreenProperty status, STATUS_Inputvalid
-				printBMP
+				printScreen
 				
 		DEC_Password_LABEL: ;===== Password =====
 			
