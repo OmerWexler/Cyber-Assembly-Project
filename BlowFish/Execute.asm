@@ -114,8 +114,9 @@ start:
 	
 	; printBMPCharacter '.', 160d, 100d
 	printString BMP_TesterString, 0d, 100d
-	printString BMP_TesterString2, 0d, 113d
+	printString BMP_TesterString2, 0d, 115d
 	waitForKeyboardInput
+	jmp start
 	
 	EXE_OpeningScreen_LABEL: ;=====-===== Opening Screen ==========================================================================================================================================
 
