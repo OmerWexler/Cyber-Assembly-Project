@@ -112,8 +112,7 @@ start:
 
 	prepareRun	
 	
-	printBMPCharacter "B", 160d, 100d
-	printBMPCharacter "B", 168d, 100d
+	printBMPCharacter 'S', 160d, 100d
 	waitForKeyboardInput
 	
 	jmp exit

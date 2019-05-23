@@ -40,17 +40,101 @@ endp switchGraphicsMode_PROC
 macro setBMPCharToPrint SBCT_CharToPrint_PARAM
 	
 	mov al, SBCT_CharToPrint_PARAM
-	mov [byte ptr BMP_CharBMPBuffer + BMPChar], al
+	mov [byte ptr BMP_CharBMPBuffer], al
 
 endm setBMPCharToPrint
 
 ;===== Uses the printBMPByPosition in order to print a character on screen =====
 macro printBMPCharacter PBC_Character_PARAM, PBC_X_PARAM, PBC_Y_PARAM
 
-	setBMPCharToPrint PBC_Character_PARAM
-	printBMPByPosition BMP_CharBMPBuffer, PBC_X_PARAM, PBC_Y_PARAM, 7d, 12d
-	
+	push PBC_Character_PARAM
+	push PBC_X_PARAM
+	push PBC_Y_PARAM
+	call printBMPCharacter_PROC
+
 endm printBMPCharacter
+
+PBC_Character_VAR equ bp + 8
+PBC_X_VAR equ bp + 6
+PBC_Y_VAR equ bp + 4
+proc printBMPCharacter_PROC
+	initBasicProc 0
+
+	xor ax, ax
+	mov ax, [PBC_Character_VAR]
+
+	setBMPCharToPrint al
+	openFile BMP_CharBMPBuffer, PBMP_TempHandle, 'r'
+	call ReadHeader
+	call ReadPalette
+	call CopyPal
+
+	hideMouse
+	mov ax, [PBC_Character_VAR]
+	push bx
+
+	checkIfBetween ax, Ascii_0, Ascii_9
+	checkBooleanSingleJump [boolFlag], PBC_NumberCharacter_LABEL
+
+	checkIfBetween ax, Ascii_CA, Ascii_CZ
+	checkBooleanSingleJump [boolFlag], PBC_CapitalCharacter_LABEL
+	
+	checkIfBetween ax, Ascii_A, Ascii_Z
+	checkBoolean [boolFlag], PBC_LowerCaseCharacter_LABEL, PBC_Exit_LABEL
+
+	PBC_NumberCharacter_LABEL:
+		mov si, [PBC_Character_VAR]
+		sub si, Ascii_0
+		
+		mov ax, 4d
+		mul si
+		mov si, ax
+
+		add si, offset BMP_0_Resolution
+
+		jmp PBC_Print_LABEL
+
+	PBC_CapitalCharacter_LABEL:
+
+		mov si, [PBC_Character_VAR]
+		sub si, Ascii_CA
+		
+		mov ax, 4d
+		mul si
+		mov si, ax
+
+		add si, offset BMP_CA_Resolution
+
+		jmp PBC_Print_LABEL
+
+	PBC_LowerCaseCharacter_LABEL:
+		mov si, [PBC_Character_VAR]
+		sub si, Ascii_A
+		
+		mov ax, 4d
+		mul si
+		mov si, ax
+
+		add si, offset BMP_A_Resolution
+
+		jmp PBC_Print_LABEL
+
+	PBC_Print_LABEL:
+		mov ax, [PBC_X_VAR]
+		push ax
+		mov ax, [PBC_Y_VAR]
+		push ax
+		push [word ptr si]
+		push [word ptr si + 2d]
+		call CopyBitmapForPrintByPosition
+
+		showMouse
+		call CloseBMP
+
+	PBC_Exit_LABEL:
+		endBasicProc 0
+		ret 6
+endp printBMPCharacter_PROC
 
 ;===== Prints the requested picture in the requested XY and RES, while removing all white pixels =====
 macro printBMPByPosition PBMPBP_Name_PARAM, PBMPBP_X_PARAM, PBMPBP_Y_PARAM, PBMPBP_W_PARAM, PBMPBP_H_PARAM
@@ -216,8 +300,10 @@ proc CopyBitmapForPrintByPosition
 	mov ax, 0A000h
 	mov es, ax
 	mov cx, [CBMPP_h_VAR]
+
 	CBMPP_PositionPrintBMPLoop_LABEL:
 	push cx
+	
 	add cx, [CBMPP_y_VAR] ;y
 	mov di,cx
 	shl cx,6
