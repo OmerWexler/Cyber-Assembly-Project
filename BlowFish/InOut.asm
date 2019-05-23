@@ -1,11 +1,8 @@
 ;===== Read from keyboard buffer =====
 macro waitForKeyboardInput
     
-    ;clear buffer
-    mov ah, 0Ch
-    mov al, 0d
-    int 21h
-
+    clearKeyboardBuffer
+    
     ;wait for key
     mov ah, 1d
     int 21h
@@ -13,6 +10,17 @@ macro waitForKeyboardInput
     xor ah, ah
 
 endm waitForKeyboardInput
+
+;===== Clears the keyboard key buffer =====
+macro clearKeyboardBuffer params
+    push ax
+    
+    mov ah, 0Ch
+    mov al, 0d
+    int 21h
+
+    pop ax
+endm clearKeyboardBuffer
 
 ;===== Read one character from the keyboard buffer (no delay, no wait, no echo) and retuns if the buffer was read from =====
 macro readCharacterFromKeyboard 
@@ -41,7 +49,8 @@ proc readCharacterFromKeyboard_PROC
         jmp RCFK_Exit_LABEL
 
     RCFK_Exit_LABEL:
-    ret 0
+        clearKeyboardBuffer 
+        ret 0
 endp readCharacterFromKeyboard_PROC
 
 ;===== Read a string until enter is pressed =====
@@ -90,16 +99,18 @@ proc readStringFromKeyboard_PROC
 endp readStringFromKeyboard_PROC
 
 ;===== Reads one character from the keyboard buffer (if available), and copies it into a given var
-macro readStringFromKeyboardITER RKC_VarToInsertInto_PARAM, RKC_OffsetFromStart_PARAM
+macro readStringFromKeyboardITER RKC_VarToInsertInto_PARAM, RKC_OffsetFromStart_PARAM, RKC_CharacterLimit_PARAM
     
-    push 0000d ;allocate room for retur value
+    push 0000d ;allocate room for return value
+    push RKC_CharacterLimit_PARAM
     push RKC_OffsetFromStart_PARAM
     push offset RKC_VarToInsertInto_PARAM
     call readStringFromKeyboardITER_PROC
 
 endm readStringFromKeyboardITER
 
-RKC_NewOffsetToReturn equ bp + 8
+RKC_NewOffsetToReturn_VAR equ bp + 10
+RKC_CharacterLimit_VAR equ bp + 8
 RKC_OffsetFromStart_VAR equ bp + 6
 RKC_OffsetToInsertInto_VAR equ bp + 4
 proc readStringFromKeyboardITER_PROC
@@ -108,7 +119,7 @@ proc readStringFromKeyboardITER_PROC
     xor ax, ax
 
     mov di, [RKC_OffsetToInsertInto_VAR]
-    add di, [RKC_OffsetFromStart_VAR]
+    add di, [currentFileNameIndex]
 
     readCharacterFromKeyboard
     checkBoolean [boolFlag], RKC_CharacterReadSuccesfuly_LABEL, RKC_Exit_LABEL
@@ -125,7 +136,9 @@ proc readStringFromKeyboardITER_PROC
                 mov [byte ptr di], al
                 inc di
 
-                jmp RKC_ReturnNotEndOfString_LABEL
+                mov ax, [RKC_CharacterLimit_VAR]
+                compare ax, '==', di
+                checkBoolean [boolFlag], RKC_ReturnEndOfString_LABEL, RKC_ReturnNotEndOfString_LABEL
 
         RKC_BackSpace_LABEL:
             compare di, '==', 0d
@@ -151,7 +164,7 @@ proc readStringFromKeyboardITER_PROC
                 
     RKC_Exit_LABEL:
         sub di, [RKC_OffsetToInsertInto_VAR]
-        mov [RKC_NewOffsetToReturn], di
+        mov [currentFileNameIndex], di
 
         endBasicProc 0
         ret 4
@@ -183,6 +196,8 @@ macro readMouse
     push bx
     push cx
     push dx
+
+    xor bx, bx
 
     mov ax, 00003d
     int 33h

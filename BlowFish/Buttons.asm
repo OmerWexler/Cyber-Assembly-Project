@@ -4,35 +4,35 @@ proc executeBackButton_PROC
     setBoolFlag [false]
 
     mov al, [byte ptr nextScreen + stage]
-    compare ax, '>', Ascii_0
+    compare ax, '>', STAGE_Intro
     checkBoolean [boolFlag], EBB_DecStage_LABEL, EBB_ShouldDecType_LABEL
 
     EBB_ShouldDecType_LABEL:    
         xor ax, ax
 
         mov al, [byte ptr nextScreen + sType]
-        compare ax, '==', 'O'
+        compare ax, '==', TYPE_OpeningScreen
         checkBoolean [boolFlag], EBB_LeaveSoftware_LABEL, EBB_CheckEncrypt_LABEL  
 
         EBB_CheckEncrypt_LABEL:
             xor ax, ax
 
             mov al, [byte ptr nextScreen + sType]
-            compare ax, '==', 'E'
+            compare ax, '==', TYPE_Encryption
             checkBoolean [boolFlag], EBB_GoToOpeningScreen_LABEL, EBB_CheckDecrypt_LABEL    
 
         EBB_CheckDecrypt_LABEL:
             xor ax, ax       
              
             mov al, [byte ptr nextScreen + sType]
-            compare ax, '==', 'D'
+            compare ax, '==', TYPE_Decryption
             checkBoolean [boolFlag], EBB_GoToOpeningScreen_LABEL, EBB_Exit_LABEL    
 
     EBB_DecStage_LABEL:
         xor ax, ax
 
         mov al, [byte ptr nextScreen + stage]
-        compare ax, '==', Ascii_4
+        compare ax, '==', STAGE_EndGame
         checkBoolean [boolFlag], EBB_LeaveSoftware_LABEL, EBB_ShouldDecNormal_LABEL ;because it's the final stage, and the user can't come back, only exit using button
         
             EBB_ShouldDecNormal_LABEL:
@@ -45,7 +45,7 @@ proc executeBackButton_PROC
                 jmp EBB_Exit_LABEL
 
     EBB_GoToOpeningScreen_LABEL:
-        setNextType 'O'
+        setNextScreenProperty sType, TYPE_OpeningScreen
         jmp EBB_Exit_LABEL
 
     EBB_LeaveSoftware_LABEL:
@@ -73,7 +73,7 @@ endp executeNextButton_PROC
 proc executeDecryptButton_PROC
     initBasicProc 0
 
-    setNextType 'D'
+    setNextScreenProperty sType, TYPE_Decryption
 
     endBasicProc 0
     ret 0
@@ -83,7 +83,7 @@ endp executeDecryptButton_PROC
 proc executeEncryptButton_PROC
     initBasicProc 0
 
-    setNextType 'E'
+    setNextScreenProperty sType, TYPE_Encryption
 
     endBasicProc 0
     ret 0
@@ -93,7 +93,7 @@ endp executeEncryptButton_PROC
 proc executeRestartButton_PROC
     initBasicProc 0
 
-    setNextType 'O'
+    setNextScreenProperty sType, TYPE_OpeningScreen
 
     endBasicProc 0
     ret 0

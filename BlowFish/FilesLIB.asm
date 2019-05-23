@@ -251,3 +251,37 @@ endp writeToFile_PROC
 macro resetCurrentReadFilePointer
 	seekFile [currentReadFileHandle], 0, 0, 0
 endm resetCurrentReadFilePointer
+
+;===== Checks if a file exists =====
+macro validateFile VF_FileName_PARAM
+	
+	push offset VF_FileName_PARAM
+	call validateFile_PROC
+endm validateFile
+
+VF_FileNameOffset_VAR equ bp + 4
+proc validateFile_PROC
+	initBasicProc 0
+
+	mov al, 0
+	mov dx, [VF_FileNameOffset_VAR]
+	mov ah, 3dh
+	int 21h 
+	
+	jc VF_ReturnFalse_LABEL
+	jnc VF_ReturnTrue_LABEL
+
+	VF_ReturnFalse_LABEL:
+		setBoolFlag [false]
+		jmp VF_Exit_LABEL
+
+	VF_ReturnTrue_LABEL:
+		closeFile ax
+
+		setBoolFlag [true]
+		jmp VF_Exit_LABEL
+	
+	VF_Exit_LABEL:
+	endBasicProc 0
+	ret 2
+endp validateFile_PROC

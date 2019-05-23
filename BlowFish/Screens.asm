@@ -18,13 +18,36 @@ macro resetButtons
     
 endm resetButtons 
 
-;===== Resets the status into 0 =====
-macro resetStatus
-
-    mov al, Ascii_0
-    mov [byte ptr nextScreen + status], al
+;===== Sets a single NEXT screen property =====
+macro setNextScreenProperty SNSP_TypeOfProperty_PARAM, SNSP_DataToSet_PARAM
     
-endm resetStatus
+    push di
+    push ax
+
+    push SNSP_TypeOfProperty_PARAM
+    push SNSP_DataToSet_PARAM
+    call setNextScreenProperty_PROC
+
+    pop ax
+    pop di
+
+endm setNextScreenProperty
+
+SNSP_TypeOfProperty_PARAM equ bp + 6
+SNSP_DataToSet_PARAM equ bp + 4
+proc setNextScreenProperty_PROC
+    initBasicProc 0
+
+    xor ax, ax
+    xor di, di
+
+    mov di, [SNSP_TypeOfProperty_PARAM]
+    mov ax, [SNSP_DataToSet_PARAM]
+    mov [byte ptr nextScreen + di], al
+
+    endBasicProc 0
+    ret 4
+endp setNextScreenProperty_PROC
 
 ;===== Compares the current position a given button's area =====
 ;returns if an update is needed
@@ -139,7 +162,6 @@ macro setNextType SCT_Type_PARAM
 
     mov al, SCT_Type_PARAM
     mov [nextScreen + SType], al
-    
 
     pop ax
 endm setNextType
@@ -203,9 +225,16 @@ proc checkMouseClick_PROC
     initBasicProc 0
     
     compare [clickStatus], '==', leftClick
-    checkBoolean [boolFlag], CMC_Clicked_LABEL, CMC_Exit_LABEL
+    checkBoolean [boolFlag], CMC_WaitForRealese_LABEL, CMC_Exit_LABEL
 
-    CMC_Clicked_LABEL:
+    CMC_WaitForRealese_LABEL:
+        
+        readMouse 
+        
+        compare [clickStatus], '==', noClick
+        checkBoolean [boolFlag], CMC_CheckButtons_LABEL, CMC_WaitForRealese_LABEL
+
+        CMC_CheckButtons_LABEL:
         mov ax, [CMC_ButtonToExecute_VAR]
 
         CMC_CheckBack_LABEL:
@@ -287,6 +316,7 @@ proc checkMouseClick_PROC
 
         resetButtons
         printBMP
+        
         jmp CMC_Exit_LABEL
 
     CMC_ReturnFalse_LABEL:

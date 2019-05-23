@@ -36,38 +36,42 @@ proc switchGraphicsMode_PROC
 		ret 2
 endp switchGraphicsMode_PROC
 
+;===== Sets the BMP_CharBuffer to the requested name and print a character by an XY set =====
+macro setBMPCharToPrint SBCT_CharToPrint_PARAM
+	
+	mov al, SBCT_CharToPrint_PARAM
+	mov [byte ptr BMP_CharBMPBuffer + BMPChar], al
 
-;===== Makes sure the file named in NextScreen exists, and ajusts accordingly =====
-macro validateNextScreen
-    
-    call validateNextScreen_PROC
-    
-endm validateNextScreen
+endm setBMPCharToPrint
 
-proc validateNextScreen_PROC
+;===== Uses the printBMPByPosition in order to print a character on screen =====
+macro printBMPCharacter PBC_Character_PARAM, PBC_X_PARAM, PBC_Y_PARAM
 
-    mov al, 2
-    mov dx, offset nextScreen
-    mov ah, 3dh
-    int 21h
+	setBMPCharToPrint PBC_Character_PARAM
+	printBMPByPosition BMP_CharBMPBuffer, PBC_X_PARAM, PBC_Y_PARAM, 7d, 12d
+	
+endm printBMPCharacter
 
-    jc VCS_InValid_LABEL
-    jnc VCS_Valid_LABEL 
+;===== Prints the requested picture in the requested XY and RES, while removing all white pixels =====
+macro printBMPByPosition PBMPBP_Name_PARAM, PBMPBP_X_PARAM, PBMPBP_Y_PARAM, PBMPBP_W_PARAM, PBMPBP_H_PARAM
+	
+	openFile PBMPBP_Name_PARAM, PBMP_TempHandle, 'r'
+	call ReadHeader	
+	call ReadPalette	
+	call CopyPal
+	
+	hideMouse
 
-    VCS_Valid_LABEL:
-        closeFile ax
-        copyFileName currentScreen, nextScreen
-        setBoolFlag [true]
-        jmp VCS_Exit_LABEL
-        
-    VCS_InValid_LABEL:
-        copyFileName nextScreen, currentScreen
-        setBoolFlag [false]
-        jmp VCS_Exit_LABEL
+	push PBMPBP_X_PARAM
+	push PBMPBP_Y_PARAM
+	push PBMPBP_W_PARAM
+	push PBMPBP_H_PARAM
+	call CopyBitmapForPrintByPosition
+	
+	showMouse
+	call CloseBMP
 
-    VCS_Exit_LABEL:
-    ret 0
-endp validateNextScreen_PROC
+endm printBMPByPosition
 
 ;===== Prints the current bmp picture in name buffer =====
 macro printBMP
@@ -77,10 +81,11 @@ endm
 proc printBMP_PROC
 	initBasicProc 0
 
-	validateNextScreen
+	validateFile nextScreen
 	checkBoolean [boolFlag], PBMP_Filevalid_LABEL, PBMP_FileInvalid_LABEL
 	
 	PBMP_Filevalid_LABEL:
+		copyFileName currentScreen, nextScreen
 		call OpenBMP   
 		call ReadHeader
 		call ReadPalette
@@ -91,11 +96,13 @@ proc printBMP_PROC
 		call CloseBMP
 
 	PBMP_FileInvalid_LABEL:
+		copyFileName nextScreen, currentScreen
+
 		endBasicProc 0
 		ret 0
 endp printBMP_PROC
 ;---------------------------------------------------------------;
-proc OpenBMP
+proc OpenBMP 
 	mov ah, 3Dh    
 	xor al, al
 	mov dx, offset currentScreen
@@ -179,12 +186,12 @@ PrintBMPLoop:
 	mov si,offset PBMP_ScrLine 
 	; Copy one line into video memory
 	rep movsb ; Copy line to the screen
- ;rep movsb is same as the following code:
- ;mov es:di, ds:si
- ;inc si
- ;inc di
- ;dec cx
- ;loop until cx=0
+	;rep movsb is same as the following code:
+	;mov es:di, ds:si
+	;inc si
+	;inc di
+	;dec cx
+	;loop until cx=0
 	pop cx
 	loop PrintBMPLoop
 	ret
@@ -197,10 +204,10 @@ proc CloseBMP
 	ret
 endp CloseBMP
 ;---------------------------------------------------------------;
-x equ [word ptr bp + 4]
-y equ [word ptr bp + 6]
-w equ [word ptr bp + 8]
-h equ [word ptr bp + 10]
+CBMPP_x_VAR equ bp + 10
+CBMPP_y_VAR equ bp + 8
+CBMPP_w_VAR equ bp + 6
+CBMPP_h_VAR equ bp + 4
 proc CopyBitmapForPrintByPosition	
 	push bp
 	mov bp, sp 
@@ -208,25 +215,45 @@ proc CopyBitmapForPrintByPosition
 	;specifies res for (h * w) for any pic
 	mov ax, 0A000h
 	mov es, ax
-	mov cx, h
-	PositionPrintBMPLoop:
+	mov cx, [CBMPP_h_VAR]
+	CBMPP_PositionPrintBMPLoop_LABEL:
 	push cx
-	add cx, y ;y
+	add cx, [CBMPP_y_VAR] ;y
 	mov di,cx
 	shl cx,6
 	shl di,8
 	add di,cx
-	add di, x ; x
+	add di, [CBMPP_x_VAR] ; x
+	
+	mov cx, [CBMPP_w_VAR]
+	inc cx
 	mov ah,3fh
-	mov cx, w
-	mov dx,offset PBMP_ScrLine
+	mov dx,	offset PBMP_ScrLine
 	int 21h
+
 	cld 
-	mov cx, w
+	mov cx, [CBMPP_w_VAR]
 	mov si,offset PBMP_ScrLine
-	rep movsb 
+		; rep movsb 
+	CBMPP_PrintLineLoop_LABEL:
+		mov al, [byte ptr si]
+		cmp al, 230d
+		ja CBMPP_SkipCopy_LABEL
+		
+		movsb
+		jmp CBMPP_ContinueLoop_LABEL
+
+		CBMPP_SkipCopy_LABEL:
+			inc si
+			inc di
+			jmp CBMPP_ContinueLoop_LABEL
+
+		CBMPP_ContinueLoop_LABEL:
+
+		loop CBMPP_PrintLineLoop_LABEL
+
 	pop cx
-	loop PositionPrintBMPLoop
+	loop CBMPP_PositionPrintBMPLoop_LABEL
 	pop bp
 	ret 8
 endp CopyBitmapForPrintByPosition

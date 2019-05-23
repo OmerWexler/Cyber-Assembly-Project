@@ -3,7 +3,9 @@ IDEAL
 MODEL small
 STACK 100h
 DATASEG
+include 'Ascii.asm'
 include 'VarData.asm'
+include 'CharBMPs.asm'
 
 CODESEG
 include 'BaseLIB.asm'
@@ -108,13 +110,13 @@ start:
 
 	xor di, di
 
-	l:
-		readStringFromKeyboardITER nextScreen, di
-		pop di
-		checkBoolean [boolFlag], exit, l
-
 	prepareRun	
-
+	
+	printBMPCharacter "B", 160d, 100d
+	printBMPCharacter "B", 168d, 100d
+	waitForKeyboardInput
+	
+	jmp exit
 	EXE_OpeningScreen_LABEL: ;=====-===== Opening Screen ==========================================================================================================================================
 
 		setupButtons [true], [false], [true], [true], [false]
@@ -137,24 +139,38 @@ start:
 		DEC_Name_LABEL: ;===== Name Check =====
 
 			setupButtons [true], [true], [false], [false], [false]
-		
-			xor di, di
+
 			DEC_NameEmpty_LOOP: ;=== Name Empty Loop ===
 				
-
 				manageCurrentScreen backButton, DEC_NameEmpty_LOOP, nextButton, DEC_NameEmpty_LOOP
-				; readKeyboardCharacter currentReadFileName, di
-				checkBoolean [boolFlag], DEC_CharacterRead_LABEL, DEC_NameEmpty_LOOP
+				
+				readStringFromKeyboardITER currentReadFileName, di, readFileLengthLimit
+				pop di
 			
-				DEC_CharacterRead_LABEL:
-					
+				DEC_ValidateName_LABEL:
+					mov [currentReadFileName + di + 1], 0d ; seals the file for validation
+					validateFile currentReadFileName
+					checkBoolean [boolFlag], DEC_NameInValid_LABEL, DEC_NameInValid_LABEL
+
+					DEC_NameInValid_LABEL:
+					setNextScreenProperty status, STATUS_InputInvalid
+
 
 				jmp DEC_NameEmpty_LOOP
-
 				
-			DEC_NameInValid_LOOP: ;=== Name Invalid Loop ===
+
+			; DEC_NameInValid_LABEL: ;=== Name InValid ===
+				printBMP
+				
+				DEC_NameInValid_LOOP:
+					
+					manageCurrentScreen backButton, EXE_OpeningScreen_LABEL, nextButton, DEC_Name_LABEL
+					jmp DEC_NameInValid_LOOP
+
 			DEC_NameValid_LOOP: ;=== Name Valid Loop ===
-			
+				setNextScreenProperty status, STATUS_Inputvalid
+				printBMP
+				
 		DEC_Password_LABEL: ;===== Password =====
 			
 			setupButtons [true], [true], [false], [false], [false]
