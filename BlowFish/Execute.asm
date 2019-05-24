@@ -105,19 +105,15 @@ start:
 	showMouse	
 	
 	printScreen
-	; printString currentReadFileName, 88d, 138d
-
+	
 	; startA:
-	; 	readStringFromKeyboardITER currentReadFileName
-	; 	xor [boolFlag], 1d
-	; 	checkBooleanSingleJump [boolFlag], startA
-
-	; 	printScreen
+	; 	validateFile currentReadFileName
 	; 	printString currentReadFileName, 88d, 138d
+
 	; 	jmp startA
 	
 	EXE_OpeningScreen_LABEL: ;=====-===== Opening Screen ==========================================================================================================================================
-
+		
 		setupButtons [true], [false], [true], [true], [false]
 
 		OPS_OpeningScreen_LOOP: ;=== Opening Screen Loop ===
@@ -137,55 +133,59 @@ start:
 			
 		DEC_Name_LABEL: ;===== Name Check =====
 
-			setupButtons [true], [true], [false], [false], [false]
+			setupButtons [false], [false], [false], [false], [false]
 
-			DEC_NameEmpty_LOOP: ;=== Name Empty Loop ===
+			DEC_Name_LOOP: ;=== Name Empty Loop ===
 				
-				manageCurrentScreen backButton, DEC_NameEmpty_LOOP, nextButton, DEC_NameEmpty_LOOP
-				
+				manageCurrentScreen backButton, DEC_Intro_LABEL, nextButton, DEC_Password_LABEL
+
 				readStringFromKeyboardITER currentReadFileName
-
-				checkBoolean [boolFlag], DEC_ValidateName_LABEL, DEC_NameEmpty_LOOP
+				checkBoolean [boolFlag], DEC_ValidateName_LABEL, DEC_Name_LOOP
 				
 				DEC_ValidateName_LABEL:
+						printString currentReadFileName, 88d, 138d
 
-					printString currentReadFileName, 88d, 138d
-
-					validateFile currentReadFileName
-					checkBoolean [boolFlag], DEC_NameValid_LABEL, DEC_NameInValid_LABEL
-					
-					jmp DEC_NameEmpty_LOOP
+						validateFile currentReadFileName
+						checkBoolean [boolFlag], DEC_NameValid_LABEL, DEC_NameInValid_LABEL
+						
+					jmp DEC_Name_LOOP 
 					
 			DEC_NameInValid_LABEL: ;=== Name InValid ===
-				setNextScreenProperty status, STATUS_InputInvalid	
+				setupButtons [false], [false], [false], [false], [false]
+				setNextScreenProperty status, STATUS_InputInvalid
+				
 				printScreen
 				printString currentReadFileName, 88d, 138d
-
-				jmp DEC_NameEmpty_LOOP
+				
+				jmp DEC_Name_LOOP
 						
 			DEC_NameValid_LABEL:  ;=== Name Valid ===
 				setNextScreenProperty status, STATUS_InputValid
+
 				printScreen
 				printString currentReadFileName, 88d, 138d
-	
-				DEC_NameValid_LOOP: 
-					
-					manageCurrentScreen backButton, DEC_NameValid_LABEL, nextButton, DEC_NameValid_LABEL
-					
-					readStringFromKeyboardITER currentReadFileName
-					checkBoolean [boolFlag], DEC_CharacterWasRead_LABEL, DEC_NameValid_LOOP
-					
 
-					DEC_CharacterWasRead_LABEL:
-						validateFile currentReadFileName
-						checkBooleanSingleJump [boolFlag], DEC_NameInValid_LABEL
+				DEC_NameValid_Loop:
+					setupButtons [true], [true], [false], [false], [false]
+					manageCurrentScreen nextButton, DEC_Password_LABEL, backButton, DEC_Intro_LABEL
+					
+					isAnyButtonLit
+					pop ax
+					compare ax, '!=', nextButton
+					checkBooleanSingleJump [boolFlag], DEC_SkipNameRefresh_LABEL
+					
+					printString currentReadFileName, 88d, 138d
 
-						printString currentReadFileName, 88d, 138d
-						jmp DEC_NameValid_LOOP
-						
-						
+					DEC_SkipNameRefresh_LABEL:
+						readStringFromKeyboardITER currentReadFileName
+						checkBoolean [boolFlag], DEC_ReValidateName_LABEL, DEC_NameValid_Loop
+					
+					DEC_ReValidateName_LABEL:
+							printString currentReadFileName, 88d, 138d
 
-				
+							validateFile currentReadFileName
+							checkBoolean [boolFlag], DEC_NameValid_Loop, DEC_NameInValid_LABEL
+									
 		DEC_Password_LABEL: ;===== Password =====
 			
 			setupButtons [true], [true], [false], [false], [false]

@@ -42,6 +42,7 @@ proc executeBackButton_PROC
                 dec al
                 mov [byte ptr nextScreen + stage], al    
 
+                setNextScreenProperty status, Ascii_0
                 jmp EBB_Exit_LABEL
 
     EBB_GoToOpeningScreen_LABEL:

@@ -174,13 +174,13 @@ macro isAnyButtonLit
 
 endm isAnyButtonLit
 
-IBAL_ReturnValue_VAR equ bp + 4
+IBAL_ButtonLit_VAR equ bp + 4
 proc isAnyButtonLit_PROC
     initBasicProc 0
 
     setBoolFlag [false]
     xor ax, ax
-    mov [IBAL_ReturnValue_VAR], ax
+    mov [IBAL_ButtonLit_VAR], ax
     
     mov cx, 5d
     IBAL_CheckName_LABEL:
@@ -200,7 +200,7 @@ proc isAnyButtonLit_PROC
         jmp IABL_Exit_LABEL
 
     IBAL_ReturnTrue_LABEL:
-        mov [IBAL_ReturnValue_VAR], di
+        mov [IBAL_ButtonLit_VAR], di
 
         setBoolFlag [true]
         jmp IABL_Exit_LABEL
@@ -334,7 +334,6 @@ macro manageCurrentScreen MCS_ButtonToSwitch1_PARAM, MCS_LabelIfSwitch1_PARAM, M
 
     push 0000d ;allocate return room
     call manageCurrentScreen_PROC
-
     pop ax
 
     compare ax, '==', MCS_ButtonToSwitch1_PARAM

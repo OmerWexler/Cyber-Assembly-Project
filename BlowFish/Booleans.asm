@@ -121,14 +121,14 @@ proc compare_PROC
 endp compare_PROC
 
 ;===== Copy boolFlag =====
-macro copyBoolFlag booleanVar
+macro getBoolFlag booleanVar
     push ax
 
     mov al, [boolflag]
     mov booleanVar, al
 
     pop ax
-endm copyBoolFlag
+endm getBoolFlag
 
 ;===== Check boolean and jump to correct label =====
 macro checkBoolean CB_boolean_PARAM, CB_labelToTrue_PARAM, CB_labelToFalse_PARAM
@@ -206,3 +206,9 @@ macro checkBooleanSingleJump CBSJ_boolean_PARAM, CBSJ_labelToTrue_PARAM
     je CBSJ_labelToTrue_PARAM
 
 endm checkBooleanSingleJump
+
+macro flipBoolFlag
+
+    xor [boolFlag], 1d
+    
+endm flipBoolFlag

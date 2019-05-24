@@ -260,13 +260,16 @@ macro validateFile VF_FileName_PARAM
 endm validateFile
 
 VF_FileNameOffset_VAR equ bp + 4
+VF_Handle_VAR equ bp - 2
 proc validateFile_PROC
-	initBasicProc 0
+	initBasicProc 2
 
 	mov al, 0
 	mov dx, [VF_FileNameOffset_VAR]
 	mov ah, 3dh
 	int 21h 
+
+	mov [VF_Handle_VAR], ax
 	
 	jc VF_ReturnFalse_LABEL
 	jnc VF_ReturnTrue_LABEL
@@ -276,12 +279,13 @@ proc validateFile_PROC
 		jmp VF_Exit_LABEL
 
 	VF_ReturnTrue_LABEL:
+		mov ax, [VF_Handle_VAR]
 		closeFile ax
 
 		setBoolFlag [true]
 		jmp VF_Exit_LABEL
 	
 	VF_Exit_LABEL:
-	endBasicProc 0
+	endBasicProc 2
 	ret 2
 endp validateFile_PROC

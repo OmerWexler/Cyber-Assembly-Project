@@ -17,17 +17,17 @@ proc proccesCharacter_PROC
     xor ax, ax
     mov al, [CC_Char_VAR]
     checkIfBetween ax, Ascii_CA, Ascii_CZ
-    copyBoolFlag [CC_CapitalValid_VAR] 
+    getBoolFlag [CC_CapitalValid_VAR] 
 
     xor ax, ax
     mov al, [CC_Char_VAR]
     checkIfBetween ax, Ascii_A, Ascii_Z
-    copyBoolFlag [CC_LowerValid_VAR]
+    getBoolFlag [CC_LowerValid_VAR]
 
     xor ax, ax
     mov al, [CC_Char_VAR]
     checkIfBetween ax, Ascii_0, Ascii_9
-    copyBoolFlag [CC_NumberValid_VAR]
+    getBoolFlag [CC_NumberValid_VAR]
     
     mov al, [true]
     cmp [CC_CapitalValid_VAR], al

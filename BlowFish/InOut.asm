@@ -70,7 +70,7 @@ endm readStringFromKeyboardITER
 RKS_OffsetToInsertInto_VAR equ bp + 4
 RKS_CharacterRead_VAR equ bp - 2
 proc readStringFromKeyboardITER_PROC
-    initBasicProc 4
+    initBasicProc 2
 
     readCharacterFromKeyboard
     pop ax
@@ -124,7 +124,7 @@ proc readStringFromKeyboardITER_PROC
         jmp RKS_Exit_LABEL
 
     RKS_Exit_LABEL:
-        endBasicProc 4
+        endBasicProc 2
         ret 2
 endp readStringFromKeyboardITER_PROC
 

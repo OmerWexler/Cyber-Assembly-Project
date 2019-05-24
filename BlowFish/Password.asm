@@ -23,17 +23,17 @@ proc validatePassword_PROC
         xor ax, ax
         mov al, [byte ptr si]
         checkIfBetween ax, Ascii_CA, Ascii_CZ
-        copyBoolFlag [VP_CapitalValid_VAR] 
+        getBoolFlag [VP_CapitalValid_VAR] 
 
         xor ax, ax
         mov al, [byte ptr si]
         checkIfBetween ax, Ascii_A, Ascii_Z
-        copyBoolFlag [VP_LowerCaseValid_VAR]
+        getBoolFlag [VP_LowerCaseValid_VAR]
 
         xor ax, ax
         mov al, [byte ptr si]
         checkIfBetween ax, Ascii_0, Ascii_9
-        copyBoolFlag [VP_NumberValid_VAR]
+        getBoolFlag [VP_NumberValid_VAR]
         
         cmp [VP_CapitalValid_VAR], 1d
         je VP_PasswordValid_LABEL
