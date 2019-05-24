@@ -3,7 +3,8 @@ PKeys dq 18 dup (00000000h)
 keysArrayLength dw 72d
 
 ;===== Password =====
-password db 'defaultpass20202$'
+insertedPassword db 'defaultpass20202$', 0
+password         db 'defaultpass20202$', 0
 passwordLength dw 16d
 
 ;===== File Related Data =====
@@ -98,6 +99,7 @@ restartEnabled db 00d
 
 ;===== General Constants =====
 readFileLengthLimit equ 14d
+passwordLengthLimit equ 16d
 
 ;===== Screen hitboxes =====
 ;                    LowX , LowY , HighX, HighY, Button ID

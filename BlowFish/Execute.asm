@@ -23,6 +23,7 @@ include 'FKeys.asm'
 include 'Graphics.asm'
 include 'Screens.asm'
 include 'Buttons.asm'
+include 'Strings.asm'
 
 macro initAllKeys 
 
@@ -106,6 +107,10 @@ start:
 	
 	printScreen
 	
+	createDataFile ;REMOVE AFTER DECRYPTION TESTING
+	
+	; compareStrings password, insertedPassword 
+	; jmp exit
 	; startA:
 	; 	validateFile currentReadFileName
 	; 	printString currentReadFileName, 88d, 138d
@@ -139,7 +144,7 @@ start:
 				
 				manageCurrentScreen backButton, DEC_Intro_LABEL, nextButton, DEC_Password_LABEL
 
-				readStringFromKeyboardITER currentReadFileName
+				readStringFromKeyboardITER currentReadFileName, readFileLengthLimit
 				checkBoolean [boolFlag], DEC_ValidateName_LABEL, DEC_Name_LOOP
 				
 				DEC_ValidateName_LABEL:
@@ -177,7 +182,7 @@ start:
 					printString currentReadFileName, 88d, 138d
 
 					DEC_SkipNameRefresh_LABEL:
-						readStringFromKeyboardITER currentReadFileName
+						readStringFromKeyboardITER currentReadFileName, readFileLengthLimit
 						checkBoolean [boolFlag], DEC_ReValidateName_LABEL, DEC_NameValid_Loop
 					
 					DEC_ReValidateName_LABEL:
@@ -188,11 +193,61 @@ start:
 									
 		DEC_Password_LABEL: ;===== Password =====
 			
-			setupButtons [true], [true], [false], [false], [false]
-		
-			DEC_PasswordEmpty_LABEL: ;=== Password Empty Loop ===
-			DEC_PasswordInvalid_LOOP: ;=== Password Invalid Loop ===
-			DEC_PasswordValid_LOOP: ;=== Password Valid Loop ===
+			retrieveDataFile
+			setupButtons [false], [false], [false], [false], [false]
+			resetStringReadIndex
+
+			DEC_Password_Loop: ;=== Password Empty Loop ===
+				
+			manageCurrentScreen backButton, DEC_Intro_LABEL, nextButton, DEC_Password_LABEL
+						
+			readStringFromKeyboardITER insertedPassword, passwordLengthLimit
+			checkBoolean [boolFlag], DEC_ValidatePassword_LABEL, DEC_Password_Loop
+						
+			DEC_ValidatePassword_LABEL:					
+					printString insertedPassword, 93d, 138d
+
+					compareStrings password, insertedPassword 
+					checkBoolean [boolFlag], DEC_PasswordValid_LABEL, DEC_PasswordInValid_LABEL
+					
+				jmp DEC_Password_Loop 
+
+			DEC_PasswordValid_LABEL: ;=== Password Valid Loop ===
+				setupButtons [true], [true], [false], [false], [false]
+				setNextScreenProperty status, STATUS_InputValid
+				
+				printScreen
+				printString insertedPassword, 93d, 138d
+				
+				DEC_PasswordValid_LOOP:
+					manageCurrentScreen nextButton, DEC_Loading_LABEL, backButton, DEC_Name_LABEL
+					
+					isAnyButtonLit
+					pop ax
+					compare ax, '!=', nextButton
+					checkBooleanSingleJump [boolFlag], DEC_SkipPasswordRefresh_LABEL
+					
+					printString insertedPassword, 93d, 138d
+
+					DEC_SkipPasswordRefresh_LABEL:
+						readStringFromKeyboardITER insertedPassword, readFileLengthLimit
+						checkBoolean [boolFlag], DEC_ReValidatePassword_LABEL, DEC_PasswordValid_LOOP
+					
+					DEC_ReValidatePassword_LABEL:
+							printString insertedPassword, 93d, 138d
+							
+							compareStrings password, insertedPassword 
+							checkBoolean [boolFlag], DEC_Password_Loop, DEC_PasswordInValid_LABEL
+							
+
+			DEC_PasswordInValid_LABEL: ;=== Password Invalid ===
+				setupButtons [false], [false], [false], [false], [false]
+				setNextScreenProperty status, STATUS_InputInvalid
+				
+				printScreen
+				printString insertedPassword, 93d, 138d
+				
+				jmp DEC_Password_Loop
 			
 		DEC_Loading_LABEL: ;===== Loading Screen =====
 			

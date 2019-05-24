@@ -60,13 +60,15 @@ proc readCharacterFromKeyboard_PROC
 endp readCharacterFromKeyboard_PROC
 
 ;===== Reads one character from the keyboard buffer (if available), and copies it into a given var =====
-macro readStringFromKeyboardITER RKC_VarToInsertInto_PARAM
+macro readStringFromKeyboardITER RKC_VarToInsertInto_PARAM, RKC_LengthLimit_PARAM
 
+    push RKC_LengthLimit_PARAM
     push offset RKC_VarToInsertInto_PARAM
     call readStringFromKeyboardITER_PROC
 
 endm readStringFromKeyboardITER
 
+RKS_LengthLimit_VAR equ bp + 6
 RKS_OffsetToInsertInto_VAR equ bp + 4
 RKS_CharacterRead_VAR equ bp - 2
 proc readStringFromKeyboardITER_PROC
@@ -77,6 +79,10 @@ proc readStringFromKeyboardITER_PROC
     mov [RKS_CharacterRead_VAR], ax
 
     xor [boolFlag], 1d
+    checkBooleanSingleJump [boolFlag], RKS_ReturnFalse_LABEL
+
+    mov ax, [RKS_LengthLimit_VAR]
+    compare [currentStringReadIndex], '==', ax
     checkBooleanSingleJump [boolFlag], RKS_ReturnFalse_LABEL
 
     mov ax, [RKS_CharacterRead_VAR]
@@ -125,9 +131,12 @@ proc readStringFromKeyboardITER_PROC
 
     RKS_Exit_LABEL:
         endBasicProc 2
-        ret 2
+        ret 4
 endp readStringFromKeyboardITER_PROC
 
+macro resetStringReadIndex
+    mov [currentStringReadIndex], 0000d
+endm resetStringReadIndex
 ;===== hides the mouse from the user =====
 macro hideMouse
     mov ax, 2
