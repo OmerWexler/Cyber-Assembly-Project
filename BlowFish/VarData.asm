@@ -21,7 +21,6 @@ encryptedFileType db '.00000', 0
 decryptedFileName db 'decrypte'
 decryptedFileType db '.00000', 0
 
-currentFileNameIndex dw 0000d
 ;===== Blow Fish Algorithm =====
 dataBlockBuffer dq 3333333333333333h ;64 BIT 
 LStream         dd 11111111h ;32 BIT
@@ -112,7 +111,7 @@ encryptButtonBase dw 0213d, 0143d, 0320d, 0174d, encryptButton
 
 restartButtonBase dw 0263d, 0172d, 0320d, 0191d, restartButton
 
-;===== Mouse =====
+;===== In Out Library =====
 mouseX dw 0000d
 mouseY dw 0000d
 
@@ -122,3 +121,5 @@ noClick equ 0d
 leftClick equ 1d
 rightClick equ 2d
 bothClick equ 3d
+
+currentStringReadIndex dw 0000d

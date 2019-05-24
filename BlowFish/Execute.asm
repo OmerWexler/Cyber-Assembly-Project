@@ -93,30 +93,28 @@ macro setMouse X, Y
 	
 endm setMouse
 
-macro prepareRun
-
-	switchGraphicsMode 'g'
-		
-	initMouse
-	showMouse
-		
-	printScreen
-
-endm prepareRun
-
 start:
 	mov ax, @data
 	mov ds, ax
 
 	xor di, di
 
-	prepareRun	
+	switchGraphicsMode 'g'
+		
+	initMouse
+	showMouse	
 	
-	; printBMPCharacter '.', 160d, 100d
-	printString BMP_TesterString, 0d, 100d
-	printString BMP_TesterString2, 0d, 115d
-	waitForKeyboardInput
-	jmp start
+	printScreen
+	; printString currentReadFileName, 88d, 138d
+
+	; startA:
+	; 	readStringFromKeyboardITER currentReadFileName
+	; 	xor [boolFlag], 1d
+	; 	checkBooleanSingleJump [boolFlag], startA
+
+	; 	printScreen
+	; 	printString currentReadFileName, 88d, 138d
+	; 	jmp startA
 	
 	EXE_OpeningScreen_LABEL: ;=====-===== Opening Screen ==========================================================================================================================================
 
@@ -145,32 +143,48 @@ start:
 				
 				manageCurrentScreen backButton, DEC_NameEmpty_LOOP, nextButton, DEC_NameEmpty_LOOP
 				
-				readStringFromKeyboardITER currentReadFileName, di, readFileLengthLimit
-				pop di
-			
+				readStringFromKeyboardITER currentReadFileName
+
+				checkBoolean [boolFlag], DEC_ValidateName_LABEL, DEC_NameEmpty_LOOP
+				
 				DEC_ValidateName_LABEL:
-					mov [currentReadFileName + di + 1], 0d ; seals the file for validation
+
+					printString currentReadFileName, 88d, 138d
+
 					validateFile currentReadFileName
-					checkBoolean [boolFlag], DEC_NameInValid_LABEL, DEC_NameInValid_LABEL
-
-					DEC_NameInValid_LABEL:
-					setNextScreenProperty status, STATUS_InputInvalid
-
+					checkBoolean [boolFlag], DEC_NameValid_LABEL, DEC_NameInValid_LABEL
+					
+					jmp DEC_NameEmpty_LOOP
+					
+			DEC_NameInValid_LABEL: ;=== Name InValid ===
+				setNextScreenProperty status, STATUS_InputInvalid	
+				printScreen
+				printString currentReadFileName, 88d, 138d
 
 				jmp DEC_NameEmpty_LOOP
-				
-
-			; DEC_NameInValid_LABEL: ;=== Name InValid ===
+						
+			DEC_NameValid_LABEL:  ;=== Name Valid ===
+				setNextScreenProperty status, STATUS_InputValid
 				printScreen
-				
-				DEC_NameInValid_LOOP:
+				printString currentReadFileName, 88d, 138d
+	
+				DEC_NameValid_LOOP: 
 					
-					manageCurrentScreen backButton, EXE_OpeningScreen_LABEL, nextButton, DEC_Name_LABEL
-					jmp DEC_NameInValid_LOOP
+					manageCurrentScreen backButton, DEC_NameValid_LABEL, nextButton, DEC_NameValid_LABEL
+					
+					readStringFromKeyboardITER currentReadFileName
+					checkBoolean [boolFlag], DEC_CharacterWasRead_LABEL, DEC_NameValid_LOOP
+					
 
-			DEC_NameValid_LOOP: ;=== Name Valid Loop ===
-				setNextScreenProperty status, STATUS_Inputvalid
-				printScreen
+					DEC_CharacterWasRead_LABEL:
+						validateFile currentReadFileName
+						checkBooleanSingleJump [boolFlag], DEC_NameInValid_LABEL
+
+						printString currentReadFileName, 88d, 138d
+						jmp DEC_NameValid_LOOP
+						
+						
+
 				
 		DEC_Password_LABEL: ;===== Password =====
 			

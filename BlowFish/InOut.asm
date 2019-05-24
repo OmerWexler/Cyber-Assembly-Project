@@ -4,15 +4,15 @@ macro waitForKeyboardInput
     clearKeyboardBuffer
     
     ;wait for key
-    mov ah, 1d
-    int 21h
+    mov ah, 0h
+    int 16h
     
     xor ah, ah
 
 endm waitForKeyboardInput
 
 ;===== Clears the keyboard key buffer =====
-macro clearKeyboardBuffer params
+macro clearKeyboardBuffer
     push ax
     
     mov ah, 0Ch
@@ -23,19 +23,19 @@ macro clearKeyboardBuffer params
 endm clearKeyboardBuffer
 
 ;===== Read one character from the keyboard buffer (no delay, no wait, no echo) and retuns if the buffer was read from =====
-macro readCharacterFromKeyboard 
+macro readCharacterFromKeyboard
 
+    push 0000d
     call readCharacterFromKeyboard_PROC
 
 endm readCharacterFromKeyboard
 
+RSFK_ReturnChar_VAR equ bp + 4
 proc readCharacterFromKeyboard_PROC
-        
-    mov ah, 06h
-    mov dl, 255
-    int 21h
-    
-    mov ah, 00d
+    initBasicProc 0
+
+    mov ah, 1h
+    int 16h
 
     jnz RCFK_ReturnTrue_LABEL
     jz RCFK_ReturnFalse_LABEL
@@ -45,129 +45,87 @@ proc readCharacterFromKeyboard_PROC
         jmp RCFK_Exit_LABEL        
 
     RCFK_ReturnTrue_LABEL:
+        
+        mov ah, 00h
+        int 16h
+
+        mov [RSFK_ReturnChar_VAR], ax
+
         setBoolFlag [true]
         jmp RCFK_Exit_LABEL
 
-    RCFK_Exit_LABEL:
-        clearKeyboardBuffer 
+    RCFK_Exit_LABEL: 
+        endBasicProc 0
         ret 0
 endp readCharacterFromKeyboard_PROC
 
-;===== Read a string until enter is pressed =====
-macro readStringFromKeyboard RSFK_ReadTarget_PARAM, RSFK_StopAscii_PARAM, RSFK_LengthLimit_PARAM
+;===== Reads one character from the keyboard buffer (if available), and copies it into a given var =====
+macro readStringFromKeyboardITER RKC_VarToInsertInto_PARAM
 
-    push 0000d ;reserve room for return value
-    push RSFK_LengthLimit_PARAM
-    push RSFK_StopAscii_PARAM
-    push offset RSFK_ReadTarget_PARAM
-    call readStringFromKeyboard_PROC
-    
-endm readStringFromKeyboard
-
-RSFK_CharacterRead_VAR equ bp + 10
-RSFK_LengthLimit_VAR equ bp + 8
-RSFK_StopAscii_VAR equ bp + 6
-RSFK_ReadTargetOffset_VAR equ bp + 4
-proc readStringFromKeyboard_PROC
-    initBasicProc 0
-    
-    mov di, [RSFK_ReadTargetOffset_VAR]
-
-    RSFK_ReadLoop_LABEL:
-        xor ax, ax
-        waitForKeyboardInput
-
-        mov dx, [RSFK_StopAscii_VAR] 
-        compare ax, '==', dx
-        checkBoolean [boolFlag], RSFK_Exit_LABEL, RSFK_MoveIntoDest_LABEL
-
-        RSFK_MoveIntoDest_LABEL:
-            mov [byte ptr di], al
-            inc di
-
-            mov ax, [RSFK_CharacterRead_VAR]
-            inc ax
-            mov [RSFK_CharacterRead_VAR], ax
-
-            mov dx, [RSFK_LengthLimit_VAR]
-            compare ax, '==', dx
-            checkBoolean [boolFlag], RSFK_Exit_LABEL, RSFK_ReadLoop_LABEL
-
-    RSFK_Exit_LABEL:
-        endBasicProc 0
-        ret 6
-endp readStringFromKeyboard_PROC
-
-;===== Reads one character from the keyboard buffer (if available), and copies it into a given var
-macro readStringFromKeyboardITER RKC_VarToInsertInto_PARAM, RKC_OffsetFromStart_PARAM, RKC_CharacterLimit_PARAM
-    
-    push 0000d ;allocate room for return value
-    push RKC_CharacterLimit_PARAM
-    push RKC_OffsetFromStart_PARAM
     push offset RKC_VarToInsertInto_PARAM
     call readStringFromKeyboardITER_PROC
 
 endm readStringFromKeyboardITER
 
-RKC_NewOffsetToReturn_VAR equ bp + 10
-RKC_CharacterLimit_VAR equ bp + 8
-RKC_OffsetFromStart_VAR equ bp + 6
-RKC_OffsetToInsertInto_VAR equ bp + 4
+RKS_OffsetToInsertInto_VAR equ bp + 4
+RKS_CharacterRead_VAR equ bp - 2
 proc readStringFromKeyboardITER_PROC
-    initBasicProc 0
-    
-    xor ax, ax
-
-    mov di, [RKC_OffsetToInsertInto_VAR]
-    add di, [currentFileNameIndex]
+    initBasicProc 4
 
     readCharacterFromKeyboard
-    checkBoolean [boolFlag], RKC_CharacterReadSuccesfuly_LABEL, RKC_Exit_LABEL
+    pop ax
+    mov [RKS_CharacterRead_VAR], ax
 
-    RKC_CharacterReadSuccesfuly_LABEL:
-        compare ax, '==', Ascii_Backspace
-        checkBoolean [boolFlag], RKC_BackSpace_LABEL, RKC_CheckEnter_LABEL
+    xor [boolFlag], 1d
+    checkBooleanSingleJump [boolFlag], RKS_ReturnFalse_LABEL
+
+    mov ax, [RKS_CharacterRead_VAR]
+    mov ah, 00d
+    compare ax, '==', Ascii_Backspace
+    checkBoolean [boolFlag], RKS_RemoveChar_LABEL, RKS_WriteCharacter_LABEL
+
+    RKS_WriteCharacter_LABEL:
+        mov di, [RKS_OffsetToInsertInto_VAR]
+        add di, [currentStringReadIndex]
+
+        mov ax, [RKS_CharacterRead_VAR]
+        mov [byte ptr di], al
+        mov [byte ptr di + 1], 00d
+
+        sub di, [RKS_OffsetToInsertInto_VAR]
+        inc di
+        mov [currentStringReadIndex], di
+
+        jmp RKS_ReturnTrue_LABEL
+
+    RKS_RemoveChar_LABEL:
+        mov di, [RKS_OffsetToInsertInto_VAR]
+        add di, [currentStringReadIndex]
         
-        RKC_CheckEnter_LABEL:
-            compare ax, '==', Ascii_Enter
-            checkBoolean [boolFlag], RKC_ReturnEndOfString_LABEL, RKC_InsertChar_LABEL
+        compare [currentStringReadIndex], '==', 0
+        checkBooleanSingleJump [boolFlag], RKS_SkipDEC_LABEL
 
-            RKC_InsertChar_LABEL:
-                mov [byte ptr di], al
-                inc di
+        dec di
 
-                mov ax, [RKC_CharacterLimit_VAR]
-                compare ax, '==', di
-                checkBoolean [boolFlag], RKC_ReturnEndOfString_LABEL, RKC_ReturnNotEndOfString_LABEL
-
-        RKC_BackSpace_LABEL:
-            compare di, '==', 0d
-            checkBoolean [boolFlag], RKC_RemoveCharacter_LABEL, RKC_DecIndex_LABEL
-
-            RKC_DecIndex_LABEL:
-                dec di
-                jmp RKC_RemoveCharacter_LABEL
+        RKS_SkipDEC_LABEL:
+            mov [byte ptr di], 00d
             
-            RKC_RemoveCharacter_LABEL:
-                mov al, 00d
-                mov [byte ptr di], al
-            
-            jmp RKC_ReturnNotEndOfString_LABEL
+            sub di, [RKS_OffsetToInsertInto_VAR]
+            mov [currentStringReadIndex], di
 
-    RKC_ReturnEndOfString_LABEL:
+            jmp RKS_ReturnTrue_LABEL
+
+    RKS_ReturnTrue_LABEL:
         setBoolFlag [true]
-        jmp RKC_Exit_LABEL
-                
-    RKC_ReturnNotEndOfString_LABEL:
+        jmp RKS_Exit_LABEL
+    
+    RKS_ReturnFalse_LABEL:
         setBoolFlag [false]
-        jmp RKC_Exit_LABEL
-                
-    RKC_Exit_LABEL:
-        sub di, [RKC_OffsetToInsertInto_VAR]
-        mov [currentFileNameIndex], di
+        jmp RKS_Exit_LABEL
 
-        endBasicProc 0
-        ret 4
+    RKS_Exit_LABEL:
+        endBasicProc 4
+        ret 2
 endp readStringFromKeyboardITER_PROC
 
 ;===== hides the mouse from the user =====

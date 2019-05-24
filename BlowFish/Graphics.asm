@@ -47,17 +47,16 @@ macro printBMP PBMP_Name_PARAM, PBMP_X_PARAM, PBMP_Y_PARAM, PBMP_ColorToFilter
 	call ReadPalette
 	call CopyPal
 	
-	hideMouse
 	
 	pop dx
 	pop cx
-
+	
 	push PBMP_ColorToFilter
 	push cx
 	push dx
+
 	call CopyBitmapForPrintByPosition
-	
-	showMouse
+		
 	closeFile [PBMP_TempHandle]
 
 endm printBMP
@@ -230,6 +229,7 @@ proc CopyBitmapForPrintByPosition
 	PrintBMPLoopA:
 		push cx
 		dec cx
+
 		; di = cx*320, point to the correct screen line
 		add cx, [CBMPP_y_VAR]
 		mov di, cx
@@ -237,7 +237,7 @@ proc CopyBitmapForPrintByPosition
 		shl di, 8
 		add di, cx
 		add di, [CBMPP_x_VAR]
-
+		
 		; Read one line
 		mov ah, 3fh
 		mov cx, [PBMP_Width]
@@ -247,42 +247,58 @@ proc CopyBitmapForPrintByPosition
 		;clear trash
 		cmp [PBMP_Padding], 4
 		je CBMPP_PrintOnScreen_LABEL
-
+		
 		mov ah, 3fh
 		mov cx, [PBMP_Padding]
 		mov dx, offset PBMP_TrashPadding
 		int 21h
 	CBMPP_PrintOnScreen_LABEL:
-		cld
-		mov cx,[PBMP_Width]
-		mov si,offset PBMP_ScrLine
+		hideMouse
 
-		CBMPP_PrintLineLoop_LABEL:
+		mov ax, [CBMPP_ColorToFilter_VAR]
+		cmp ax, 'N'
+		je CBMPP_QuickPrint_LABEL
+		jne CBMMP_FilterColor_LABEL
 
-			xor ax, ax
-			mov ax, [CBMPP_ColorToFilter_VAR]
-			cmp ax, 'N'
-			je CBMPP_CopyPixel_LABEL
-
-			xor ax, ax
-			mov al, [byte ptr si]
-			cmp ax, [CBMPP_ColorToFilter_VAR]
-			je CBMPP_SkipCopy_LABEL
+		CBMPP_QuickPrint_LABEL:
 			
-			CBMPP_CopyPixel_LABEL:
-				movsb
-				jmp CBMPP_ContinueLoop_LABEL
+			cld
+			mov cx,[PBMP_Width]
+			mov si,offset PBMP_ScrLine
+			rep movsb
 
-			CBMPP_SkipCopy_LABEL:
-				inc si
-				inc di
-				jmp CBMPP_ContinueLoop_LABEL
+			jmp CBMMP_RunNextLine
 
-			CBMPP_ContinueLoop_LABEL:
-				loop CBMPP_PrintLineLoop_LABEL
-		
-		pop cx
-		loop PrintBMPLoopA
+		CBMMP_FilterColor_LABEL:
+			cld
+
+			mov cx, [PBMP_Width]
+			mov si, offset PBMP_ScrLine
+			CBMPP_PrintLineLoop_LABEL:
+	
+				xor ax, ax
+				mov al, [byte ptr si]
+				cmp ax, [CBMPP_ColorToFilter_VAR]
+
+				je CBMPP_SkipCopy_LABEL
+
+					movsb
+					jmp CBMPP_ContinueFilterLoop
+
+				CBMPP_SkipCopy_LABEL:
+					inc si
+					inc di
+
+					jmp CBMPP_ContinueFilterLoop
+				
+				CBMPP_ContinueFilterLoop:
+					loop CBMPP_PrintLineLoop_LABEL
+
+		CBMMP_RunNextLine:
+			showMouse
+
+			pop cx
+			loop PrintBMPLoopA
 
 	endBasicProc 0
 	ret 6
