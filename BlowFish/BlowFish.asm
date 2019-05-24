@@ -216,6 +216,8 @@ proc iterAlgoritm_PROC
 
 		call finishEncryption_PROC
 		add sp, 2d
+
+
 		checkBoolean [boolFlag], IA_Recall_LABEL, IA_Exit_LABEL ;checks the already set boolean flag
 
 	IA_Recall_LABEL:
@@ -254,3 +256,61 @@ proc runAlgorithm_PROC
 	endBasicProc 0
 	ret 0
 endp runAlgorithm_PROC
+
+;===== Calculates the algorithm progress =====
+macro calculateAndPrintProgress CAPP_X_PARAM, CAPP_Y_PARAM
+	
+	push CAPP_X_PARAM 
+	push CAPP_Y_PARAM
+	call calculateAndPrintProgress_PROC
+
+endm calculateAndPrintProgress
+
+CAPP_X_VAR equ bp + 6
+CAPP_Y_VAR equ bp + 4
+proc calculateAndPrintProgress_PROC
+	initBasicProc 0
+
+	xor edx, edx
+	mov ecx, 100d
+	mov eax, [currentReadFileLength]
+	div ecx
+
+	xor edx, edx
+	mov ecx, eax
+	mov eax, [overAllBytesRead]
+	div ecx
+
+	mov [proccesProgress], eax
+
+	xor ax, ax
+	mov al, [byte ptr proccesProgress]
+	
+	mov cx, 3d
+	CAPP_PrepareToPrint_LABEL:
+		push cx
+		
+		mov di, 3d
+		sub di, cx
+
+		xor dx, dx
+		xor ah, ah
+
+		mov cl, 10d
+		div cl
+
+		mov dl, ah
+
+		add dl, Ascii_0
+		mov [byte ptr proccesProgressString + di], dl
+		
+		pop cx
+		loop CAPP_PrepareToPrint_LABEL
+		
+	mov cx, [CAPP_X_VAR]
+	mov dx, [CAPP_Y_VAR]
+	printString proccesProgressString, cx, dx
+	
+	endBasicProc 0
+	ret 4
+endp calculateAndPrintProgress_PROC

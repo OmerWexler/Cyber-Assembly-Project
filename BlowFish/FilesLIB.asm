@@ -289,3 +289,53 @@ proc validateFile_PROC
 	endBasicProc 2
 	ret 2
 endp validateFile_PROC
+
+;===== Returns the size of a given file (in double word format, each unit it returns equals 8 bytes) =====
+macro checkFileLength CFL_FileName_PARAM
+    
+    push offset CFL_FileName_PARAM
+    call checkFileLength_PROC
+
+endm checkFileLength
+
+CFL_FileNameOffset_VAR equ bp + 4
+proc checkFileLength_PROC
+    initBasicProc 0
+
+	mov ax, [CFL_FileNameOffset_VAR]
+	push ax
+    call validateFile_PROC
+    flipBoolFlag
+    checkBooleanSingleJump [boolFlag], CFL_ReturnFalse_LABEL
+	
+	mov ax, [CFL_FileNameOffset_VAR]
+	push ax
+	push offset currentReadFileHandle
+	push 'r'
+	call openFile_PROC
+
+	mov bx, [currentWriteFileHandle]
+	mov al, 2d
+	mov cx, 0000d
+	mov dx, 0000d
+	mov ah, 42h
+	int 21h
+	jc CFL_ReturnFalse_LABEL
+
+	mov [word ptr currentReadFileLength], ax
+	mov [word ptr currentReadFileLength + 2], dx
+
+	CFL_ReturnTrue_LABEL:
+		closeFile [currentReadFileHandle]
+
+		setBoolFlag [true]
+        jmp CFL_Exit_LABEL
+
+    CFL_ReturnFalse_LABEL:
+        setBoolFlag [false]
+        jmp CFL_Exit_LABEL
+
+    CFL_Exit_LABEL:
+        endBasicProc 0
+        ret 2
+endp checkFileLength_PROC

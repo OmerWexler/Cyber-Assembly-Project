@@ -81,16 +81,17 @@ proc readStringFromKeyboardITER_PROC
     xor [boolFlag], 1d
     checkBooleanSingleJump [boolFlag], RKS_ReturnFalse_LABEL
 
-    mov ax, [RKS_LengthLimit_VAR]
-    compare [currentStringReadIndex], '==', ax
-    checkBooleanSingleJump [boolFlag], RKS_ReturnFalse_LABEL
-
     mov ax, [RKS_CharacterRead_VAR]
     mov ah, 00d
     compare ax, '==', Ascii_Backspace
     checkBoolean [boolFlag], RKS_RemoveChar_LABEL, RKS_WriteCharacter_LABEL
 
     RKS_WriteCharacter_LABEL:
+        mov ax, [RKS_LengthLimit_VAR]
+        dec ax
+        compare [currentStringReadIndex], '>=', ax
+        checkBooleanSingleJump [boolFlag], RKS_ReturnFalse_LABEL
+
         mov di, [RKS_OffsetToInsertInto_VAR]
         add di, [currentStringReadIndex]
 

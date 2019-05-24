@@ -17,10 +17,10 @@ include 'Function.asm'
 include 'Password.asm'
 include 'Filename.asm'
 include 'Datafile.asm'
+include 'Graphics.asm'
 include 'BlowFish.asm'
 include 'PKeys.asm'
 include 'FKeys.asm'
-include 'Graphics.asm'
 include 'Screens.asm'
 include 'Buttons.asm'
 include 'Strings.asm'
@@ -109,13 +109,9 @@ start:
 	
 	createDataFile ;REMOVE AFTER DECRYPTION TESTING
 	
-	; compareStrings password, insertedPassword 
-	; jmp exit
-	; startA:
-	; 	validateFile currentReadFileName
-	; 	printString currentReadFileName, 88d, 138d
-
-	; 	jmp startA
+	startA:
+		calculateAndPrintProgress 160, 100
+		jmp exit  
 	
 	EXE_OpeningScreen_LABEL: ;=====-===== Opening Screen ==========================================================================================================================================
 		
@@ -139,6 +135,7 @@ start:
 		DEC_Name_LABEL: ;===== Name Check =====
 
 			setupButtons [false], [false], [false], [false], [false]
+			clearKeyboardBuffer
 
 			DEC_Name_LOOP: ;=== Name Empty Loop ===
 				
@@ -170,22 +167,17 @@ start:
 				printScreen
 				printString currentReadFileName, 88d, 138d
 
+				setupButtons [true], [true], [false], [false], [false]
+				
 				DEC_NameValid_Loop:
-					setupButtons [true], [true], [false], [false], [false]
 					manageCurrentScreen nextButton, DEC_Password_LABEL, backButton, DEC_Intro_LABEL
 					
-					isAnyButtonLit
-					pop ax
-					compare ax, '!=', nextButton
-					checkBooleanSingleJump [boolFlag], DEC_SkipNameRefresh_LABEL
-					
-					printString currentReadFileName, 88d, 138d
-
 					DEC_SkipNameRefresh_LABEL:
 						readStringFromKeyboardITER currentReadFileName, readFileLengthLimit
 						checkBoolean [boolFlag], DEC_ReValidateName_LABEL, DEC_NameValid_Loop
 					
 					DEC_ReValidateName_LABEL:
+							printScreen
 							printString currentReadFileName, 88d, 138d
 
 							validateFile currentReadFileName
@@ -220,20 +212,22 @@ start:
 				printString insertedPassword, 93d, 138d
 				
 				DEC_PasswordValid_LOOP:
-					manageCurrentScreen nextButton, DEC_Loading_LABEL, backButton, DEC_Name_LABEL
-					
-					isAnyButtonLit
-					pop ax
-					compare ax, '!=', nextButton
-					checkBooleanSingleJump [boolFlag], DEC_SkipPasswordRefresh_LABEL
-					
-					printString insertedPassword, 93d, 138d
+				
+						manageCurrentScreen nextButton, DEC_Loading_LABEL, backButton, DEC_Name_LABEL
+						
+						isAnyButtonLit
+						pop ax
+						compare ax, '!=', nextButton
+						checkBooleanSingleJump [boolFlag], DEC_SkipPasswordRefresh_LABEL
+						
+						printString insertedPassword, 93d, 138d
 
 					DEC_SkipPasswordRefresh_LABEL:
 						readStringFromKeyboardITER insertedPassword, readFileLengthLimit
 						checkBoolean [boolFlag], DEC_ReValidatePassword_LABEL, DEC_PasswordValid_LOOP
 					
 					DEC_ReValidatePassword_LABEL:
+							printScreen
 							printString insertedPassword, 93d, 138d
 							
 							compareStrings password, insertedPassword 

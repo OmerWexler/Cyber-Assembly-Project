@@ -22,13 +22,20 @@ encryptedFileType db '.00000', 0
 decryptedFileName db 'decrypte'
 decryptedFileType db '.00000', 0
 
+overAllBytesRead        dd 6800000d 
+currentReadFileLength   dd 34000000d 
+
+readBuffer db 512d dup (00h)
+
 ;===== Blow Fish Algorithm =====
 dataBlockBuffer dq 3333333333333333h ;64 BIT 
 LStream         dd 11111111h ;32 BIT
 RStream         dd 11111111h ;32 BIT
 
 runMode dw 0000d
- 
+proccesProgress dd 0000d
+proccesProgressString db '000', 0
+
 ;===== FKeys Array =====
 Fkeys dq 62 dup (00000000h)
 FkeysArrayLength dw 248d
@@ -44,9 +51,6 @@ true db 0001h
 false db 0000h
 
 boolFlag db 1d
-
-;===== Files Library =====
-readBuffer db 256d dup (00h)
 
 ;===== BMP printing =====
 SCREEN_WIDTH equ 320d
@@ -99,7 +103,7 @@ restartEnabled db 00d
 
 ;===== General Constants =====
 readFileLengthLimit equ 14d
-passwordLengthLimit equ 16d
+passwordLengthLimit equ 17
 
 ;===== Screen hitboxes =====
 ;                    LowX , LowY , HighX, HighY, Button ID

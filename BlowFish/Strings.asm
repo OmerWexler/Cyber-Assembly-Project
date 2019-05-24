@@ -17,12 +17,8 @@ proc compareString_PROC
     mov di, [CS_String2Offset]
 
     CS_CompareLoop_LABEL:
-        mov ax, [di]
-        compare ax,'==', Ascii_0
-        checkBooleanSingleJump [boolFlag], CS_ReturnCurrentState_LABEL 
-        
         mov ax, [si]
-        compare ax,'==', Ascii_0
+        compare ax,'==', Ascii_$
         checkBooleanSingleJump [boolFlag], CS_ReturnCurrentState_LABEL 
 
         xor ax, ax
