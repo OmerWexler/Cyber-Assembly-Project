@@ -87,3 +87,72 @@ proc copyString_PROC
     endBasicProc 0 
     ret 4
 endp copyString_PROC
+
+;===== Makes sure a string is fully valid =====
+macro validateString VS_StringToValidate_PARAM, VS_IncludeDot_PARAM
+
+    xor ax, ax
+    mov al, VS_IncludeDot_PARAM
+    push ax
+    push offset VS_StringToValidate_PARAM
+    call validateString_PROC
+    
+endm validateString
+
+VS_IncludeDot_VAR equ bp + 6
+VS_StringToValidateOffset_VAR equ bp + 4
+proc validateString_PROC
+    initBasicProc 0
+
+    mov si, [VS_StringToValidateOffset_VAR]
+    dec si
+
+    VS_CompareLoop_LABEL:
+        inc si
+
+        xor ax, ax
+        mov al, [byte ptr si]
+        checkIfBetween ax, Ascii_A, Ascii_Z 
+        checkBooleanSingleJump [boolFlag], VS_CompareLoop_LABEL
+        
+        xor ax, ax
+        mov al, [byte ptr si]
+        checkIfBetween ax, Ascii_CA, Ascii_CZ 
+        checkBooleanSingleJump [boolFlag], VS_CompareLoop_LABEL
+        
+        xor ax, ax
+        mov al, [byte ptr si]
+        checkIfBetween ax, Ascii_0, Ascii_9 
+        checkBooleanSingleJump [boolFlag], VS_CompareLoop_LABEL
+        
+        setBoolFlag [VS_IncludeDot_VAR]
+        flipBoolFlag
+        checkBooleanSingleJump [boolFlag], VS_SkipDotCheck_LABEL
+
+        xor ax, ax
+        mov al, [byte ptr si]
+        compare ax, '==', Ascii_Dot 
+        checkBooleanSingleJump [boolFlag], VS_CompareLoop_LABEL 
+
+        VS_SkipDotCheck_LABEL:
+            xor ax, ax
+            mov al, [byte ptr si]
+            compare ax, '!=', 00
+            checkBooleanSingleJump [boolFlag], VS_ReturnFalse_LABEL
+        
+            mov di, [VS_StringToValidateOffset_VAR]
+            compare si, '>', di
+            checkBoolean [boolFlag], VS_ReturnTrue_LABEL, VS_ReturnFalse_LABEL
+
+    VS_ReturnTrue_LABEL:
+        setBoolFlag [true]
+        jmp VS_Exit_LABEL
+
+    VS_ReturnFalse_LABEL:
+        setBoolFlag [false]
+        jmp VS_Exit_LABEL
+
+    VS_Exit_LABEL:
+        endBasicProc 0
+        ret 4
+endp validateString_PROC 

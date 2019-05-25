@@ -5,13 +5,12 @@ STACK 100h
 DATASEG
 include 'Ascii.asm'
 include 'VarData.asm'
-include 'CharBMPs.asm'
 
 CODESEG
 include 'BaseLIB.asm'
 include 'Booleans.asm'
-include 'InOut.asm'
 include 'FilesLIB.asm'
+include 'InOut.asm'
 include 'GenKeys.asm'
 include 'Function.asm'
 include 'Password.asm'
@@ -162,7 +161,7 @@ start:
 				
 				manageCurrentScreen backButton, EXE_Intro_LABEL, nextButton, EXE_Password_LABEL
 
-				readStringFromKeyboardITER currentReadFileName, readFileLengthLimit
+				readStringFromKeyboardITER currentReadFileName, readFileLengthLimit, [true]
 
 				checkBoolean [boolFlag], EXE_ValidateName_LABEL, EXE_Name_LOOP
 				
@@ -222,25 +221,30 @@ start:
 				
 				manageCurrentScreen backButton, EXE_Name_LABEL, nextButton, EXE_Loading_LABEL
 							
-				readStringFromKeyboardITER insertedPassword, passwordLengthLimit
-				updatePasswordLength
-
+				readStringFromKeyboardITER insertedPassword, passwordLengthLimit, [false]
 				checkBoolean [boolFlag], EXE_ValidatePassword_LABEL, EXE_Password_Loop
-							
+				
 				EXE_ValidatePassword_LABEL:
 					printString insertedPassword, passwordX, passwordY
+				
+					compare [runMode], '==', 'D'
+					checkBooleanSingleJump [boolFlag], EXE_ComparePasswordToDataFile_LABEL
 					
-					compare [runMode], '==', 'E'
-					checkBooleanSingleJump [boolFlag], EXE_PasswordValid_LABEL
-
-					compareStrings password, insertedPassword
+					updatePasswordLength
+					
+					validateString insertedPassword, [false]
 					checkBoolean [boolFlag], EXE_PasswordValid_LABEL, EXE_PasswordInValid_LABEL
+
+					EXE_ComparePasswordToDataFile_LABEL:
+					
+						compare [passwordLength], '!=', [currentStringReadIndex]
+						checkBooleanSingleJump [boolFlag], EXE_PasswordInValid_LABEL
 						
-					jmp EXE_Password_Loop 
+						compareStrings password, insertedPassword
+						checkBoolean [boolFlag], EXE_PasswordValid_LABEL, EXE_PasswordInValid_LABEL
 
 				EXE_PasswordValid_LABEL: ;=== Password Valid Loop ===
 					enableStringBuffering [true]
-
 					setupButtons [true], [true], [false], [false], [false]
 					setNextScreenProperty status, STATUS_InputValid
 					
@@ -275,7 +279,7 @@ start:
 		EXE_Loading_LABEL: ;===== Loading Screen =====
 			enableStringBuffering [true]
 			copyFileTypeToAlgorithmFiles currentReadFileName
-	
+				
 			compare [runMode], '==', 'D'
 			checkBooleanSingleJump [boolFlag], EXE_RunBLOWFISH_LABEL
 
@@ -325,12 +329,9 @@ start:
 			printScreen
 
 			EXE_EndGame_LOOP: ;=== End Game *SNAP Loop ===
-
 				manageCurrentScreen backButton, exit, restartButton, start
 				jmp EXE_EndGame_LOOP
 exit:
-printScreen
-switchGraphicsMode 'g'
 switchGraphicsMode 't'
 
 mov ax, 4C00h

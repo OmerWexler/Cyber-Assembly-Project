@@ -60,14 +60,20 @@ proc readCharacterFromKeyboard_PROC
 endp readCharacterFromKeyboard_PROC
 
 ;===== Reads one character from the keyboard buffer (if available), and copies it into a given var =====
-macro readStringFromKeyboardITER RKC_VarToInsertInto_PARAM, RKC_LengthLimit_PARAM
+macro readStringFromKeyboardITER RKC_VarToInsertInto_PARAM, RKC_LengthLimit_PARAM, RKS_IncludeDot_VAR
 
+    xor ax, ax
+    mov al, RKS_IncludeDot_VAR
+
+    push ax
     push RKC_LengthLimit_PARAM
     push offset RKC_VarToInsertInto_PARAM
     call readStringFromKeyboardITER_PROC
 
 endm readStringFromKeyboardITER
 
+
+RKS_IncludeDot_VAR equ bp + 8
 RKS_LengthLimit_VAR equ bp + 6
 RKS_OffsetToInsertInto_VAR equ bp + 4
 RKS_CharacterRead_VAR equ bp - 2
@@ -91,7 +97,7 @@ proc readStringFromKeyboardITER_PROC
         dec ax
         compare [currentStringReadIndex], '>=', ax
         checkBooleanSingleJump [boolFlag], RKS_ReturnFalse_LABEL
-
+        
         mov di, [RKS_OffsetToInsertInto_VAR]
         add di, [currentStringReadIndex]
 
@@ -102,26 +108,25 @@ proc readStringFromKeyboardITER_PROC
         sub di, [RKS_OffsetToInsertInto_VAR]
         inc di
         mov [currentStringReadIndex], di
+        
+        mov bx, [RKS_OffsetToInsertInto_VAR]
+        mov ax, [RKS_IncludeDot_VAR]
+        
+        push ax
+        push bx 
+        call validateString_PROC
+        flipBoolFlag
+        checkBooleanSingleJump [boolFlag], RKS_RemoveCharWithoutUpdate_LABEL
 
         jmp RKS_ReturnTrue_LABEL
 
     RKS_RemoveChar_LABEL:
-        mov di, [RKS_OffsetToInsertInto_VAR]
-        add di, [currentStringReadIndex]
-        
-        compare [currentStringReadIndex], '==', 0
-        checkBooleanSingleJump [boolFlag], RKS_SkipDEC_LABEL
+        call RKS_removeCharFromString_PROC
+        jmp RKS_ReturnTrue_LABEL
 
-        mov [byte ptr di], 00d
-        dec di
-
-        RKS_SkipDEC_LABEL:
-            mov [byte ptr di], 00d
-            
-            sub di, [RKS_OffsetToInsertInto_VAR]
-            mov [currentStringReadIndex], di
-
-            jmp RKS_ReturnTrue_LABEL
+    RKS_RemoveCharWithoutUpdate_LABEL:
+        call RKS_removeCharFromString_PROC
+        jmp RKS_ReturnFalse_LABEL
 
     RKS_ReturnTrue_LABEL:
         setBoolFlag [true]
@@ -133,8 +138,29 @@ proc readStringFromKeyboardITER_PROC
 
     RKS_Exit_LABEL:
         endBasicProc 2
-        ret 4
+        ret 6
 endp readStringFromKeyboardITER_PROC
+
+;=== Support function for readStringFromKeyboardITER_PROC =====
+proc RKS_removeCharFromString_PROC
+
+    mov di, [RKS_OffsetToInsertInto_VAR]
+    add di, [currentStringReadIndex]
+
+    compare [currentStringReadIndex], '==', 0
+    checkBooleanSingleJump [boolFlag], RKS_SkipDEC_LABEL
+
+    mov [byte ptr di], 00d
+    dec di
+
+    RKS_SkipDEC_LABEL:
+        mov [byte ptr di], 00d
+        
+        sub di, [RKS_OffsetToInsertInto_VAR]
+        mov [currentStringReadIndex], di
+
+    ret 0
+endp RKS_removeCharFromString_PROC
 
 macro resetStringReadIndex
     mov [currentStringReadIndex], 0000d

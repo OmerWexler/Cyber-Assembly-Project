@@ -3,9 +3,9 @@ PKeys dq 18 dup (00000000h)
 keysArrayLength dw 72d
 
 ;===== Password =====
-insertedPassword db 0,'omer20022', 0
-password         db 0,'owme2002', 0
-passwordLength dw 0d
+insertedPassword db 0,'1111111111111111', 0
+password         db 0,'0000000000000000', 0
+passwordLength   dw 0d
 
 ;===== File Related Data =====
 currentReadFileName db '00000000.00000', 0
@@ -151,3 +151,8 @@ passwordY equ 138d
 
 precentX equ 71
 precentY equ 120
+
+;===== BMP Characters =====
+BMP_CharBMPBuffer db '00.bmp', 0
+BMP_TesterString db 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 0
+BMP_TesterString2 db 'abcdefghijklmnopqrstuvwxyz1234567890.%', 0
