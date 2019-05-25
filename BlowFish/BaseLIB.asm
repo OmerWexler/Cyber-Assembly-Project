@@ -1,4 +1,5 @@
-;=========== MACROS (Support) =========== STABLE, NO DOC
+;=========== MACROS (Support) =========== 
+;===== Gets a function all set up for local variables and variable passimg (in and out) =====
 macro initBasicProc IF_SpOffset
 	
 	push bp
@@ -7,6 +8,7 @@ macro initBasicProc IF_SpOffset
 	
 endm
 
+;===== Cleasns up after initBasicProc =====
 macro endBasicProc EF_SpOffset
 	
 	add sp, EF_SpOffset
@@ -68,7 +70,7 @@ macro printChar PC_CharToWrite
 	popAll
 endm
 
-PC_CharToWrite_VAR equ [bp + 4] ; STABLE, NO DOC
+PC_CharToWrite_VAR equ [bp + 4]
 proc printChar_PROC
 
 	initBasicProc 0
@@ -80,13 +82,3 @@ proc printChar_PROC
 	endBasicProc 0
 	ret 2
 endp printChar_PROC
-
-;===== Read the system's time =====
-;Hours - ch
-;Minutes - cl
-;Seconds - dh
-;Miliseconds - dl
-macro readSystemTime
-	mov ah, 2ch
-	int 21h
-endm readSystemTime

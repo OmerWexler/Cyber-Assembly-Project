@@ -1,16 +1,9 @@
-;===== Set a boolean true or false =====
-macro setBoolean SB_BooleanToSet_PARAM, SB_NewValue_PARAM
-    
-    mov al, SB_NewValue_PARAM
-    mov SB_BooleanToSet_PARAM, al
-
-endm setBoolean
-
 ;===== Set boolFlag =====
 macro setBoolFlag boolean
     push ax
     
-    setBoolean [boolFlag], boolean
+    mov al, boolean
+    mov [boolFlag], al
     
     pop ax
 endm setBoolFlag

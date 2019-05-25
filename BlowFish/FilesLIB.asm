@@ -21,8 +21,6 @@ proc createFile_PROC
 	int 21h
 	jc CF_Error_LABEL
 	
-	;mov bx, [CF_FileHandleOffset_VAR]
-	;mov [bx] , ax
 	jmp CF_Finish_LABEL
 	
 	CF_Error_LABEL:
@@ -246,12 +244,6 @@ proc writeToFile_PROC
 		ret 6
 endp writeToFile_PROC
 
-
-;===== Custom reset file pointer macro =====
-macro resetCurrentReadFilePointer
-	seekFile [currentReadFileHandle], 0, 0, 0
-endm resetCurrentReadFilePointer
-
 ;===== Checks if a file exists =====
 macro validateFile VF_FileName_PARAM
 	
@@ -339,14 +331,3 @@ proc checkFileLength_PROC
         endBasicProc 0
         ret 2
 endp checkFileLength_PROC
-
-;===== Change the name of a closed file =====
-macro renameFile RF_OldFileName_PARAM, RF_NewFileName_PARAM
-	
-	mov dx, offset RF_OldFileName_PARAM
-	mov di, offset RF_NewFileName_PARAM
-	
-	mov ah, 56h
-	int 21h
-
-endm renameFile

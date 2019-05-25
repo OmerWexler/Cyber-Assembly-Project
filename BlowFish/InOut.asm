@@ -1,16 +1,3 @@
-;===== Read from keyboard buffer =====
-macro waitForKeyboardInput
-    
-    clearKeyboardBuffer
-    
-    ;wait for key
-    mov ah, 0h
-    int 16h
-    
-    xor ah, ah
-
-endm waitForKeyboardInput
-
 ;===== Clears the keyboard key buffer =====
 macro clearKeyboardBuffer
     push ax
@@ -162,9 +149,13 @@ proc RKS_removeCharFromString_PROC
     ret 0
 endp RKS_removeCharFromString_PROC
 
+;===== Sets the index back to zero so the function could start reading a new string =====
 macro resetStringReadIndex
+
     mov [currentStringReadIndex], 0000d
+
 endm resetStringReadIndex
+
 ;===== hides the mouse from the user =====
 macro hideMouse
     mov ax, 2

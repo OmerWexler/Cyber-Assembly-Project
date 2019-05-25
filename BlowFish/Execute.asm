@@ -13,7 +13,6 @@ include 'FilesLIB.asm'
 include 'InOut.asm'
 include 'GenKeys.asm'
 include 'Function.asm'
-include 'Password.asm'
 include 'Filename.asm'
 include 'Datafile.asm'
 include 'Strings.asm'
@@ -30,10 +29,10 @@ macro initAllKeys
 	allocateFKeys
 
 	generatePKeys
-	resetCurrentReadFilePointer
+	seekFile [currentReadFileHandle], 0, 0, 0
 
 	generateFKeys
-	resetCurrentReadFilePointer 
+	seekFile [currentReadFileHandle], 0, 0, 0
 
 endm initAllKeys
 
@@ -301,11 +300,9 @@ start:
 				checkBooleanSingleJump [boolFlag], EXE_DeleteDecryptionFiles_LABEL
 
 				EXE_DeleteEncryptionFiles_LABEL:
-					renameFile encryptedFileName, currentReadFileName
 					jmp EXE_ContinueToEndGame_LABEL
 					
 				EXE_DeleteDecryptionFiles_LABEL:
-					renameFile decryptedFileName, currentReadFileName
 					DeleteFile dataFileName
 					
 					jmp EXE_ContinueToEndGame_LABEL

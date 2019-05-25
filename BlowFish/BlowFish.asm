@@ -5,7 +5,7 @@ macro setRunMode SRM_NewRunMode_PARAM
 
 endm setRunMode
 
-;===== Calculates the algorithm progress =====
+;===== Calculates the algorithm progress adn prints it on screen at the given x and y =====
 macro calculateAndPrintProgress CAPP_X_PARAM, CAPP_Y_PARAM
 	
 	push CAPP_X_PARAM 
@@ -68,7 +68,7 @@ proc calculateAndPrintProgress_PROC
 		ret 4
 endp calculateAndPrintProgress_PROC
 
-;===== Creates a new file to write into =====
+;===== Creates a new file to write the encrypted/decrypted data =====
 proc createNewReturnFile_PROC
 
 	compare [runMode], '==', 'E'

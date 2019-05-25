@@ -170,16 +170,6 @@ proc updateButtons_PROC
     ret 2
 endp updateButtons_PROC
 
-;===== Sets the current screen type - O (opening), D (decryption), E (encryption) =====
-macro setNextType SCT_Type_PARAM
-    push ax
-
-    mov al, SCT_Type_PARAM
-    mov [nextScreen + SType], al
-
-    pop ax
-endm setNextType
- 
 ;===== Checks if any of the currentSCreens Button is currently up =====
 macro isAnyButtonLit
     
@@ -409,33 +399,6 @@ proc manageCurrentScreen_PROC
         endBasicProc 0
         ret 2
 endp manageCurrentScreen_PROC
-
-;===== Check current screen type and sets boolFlag accordigly =====
-macro compareCurrentScreenProperty CCSP_PropertyToCheck_PARAM, CCSP_DataToCheckFor_PARAM
-    
-    push CCSP_DataToCheckFor_PARAM
-    push CCSP_PropertyToCheck_PARAM
-    call compareCurrentScreenProperty_PROC
-
-endm compareCurrentScreenProperty
-
-CCSP_DataToCheckFor_VAR equ bp + 6
-CCSP_PropertyToCheck_VAR equ bp + 4
-proc compareCurrentScreenProperty_PROC
-    initBasicProc 0
-
-    xor ax, ax
-    xor dx, dx
-
-    mov di, [CCSP_PropertyToCheck_VAR]
-
-    mov al, [byte ptr currentScreen + di]
-    mov dx, [CCSP_DataToCheckFor_VAR]
-    compare ax, '==', dx
-
-    endBasicProc 0
-    ret 4
-endp compareCurrentScreenProperty_PROC
 
 ;===== Sets the is enabled var for all buttons =====
 macro setupButtons SB_Back_PARAM, SB_Next_PARAM, SB_Decrypt_PARAM, SB_Encrypt_PARAM, SB_Restart_PARAM

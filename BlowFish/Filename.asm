@@ -84,25 +84,3 @@ proc compareFileNames_PROC
     endBasicProc 0
     ret 4
 endp compareFileNames_PROC
-
-macro padNameWithZeroes PNWZ_Name_PARAM, PNWZ_OffsetToStartFrom_PARAM
-
-    push PNWZ_OffsetToStartFrom_PARAM
-    push offset PNWZ_Name_PARAM
-    call padNameWithZeroes_PROC
-    
-endm padNameWithZeroes
-
-PNWZ_NameOffset_VAR equ bp + 6
-PNWZ_NameOffset_VAR equ bp + 4
-proc padNameWithZeroes_PROC
-    initBasicProc 0    
-
-    mov di, [PNWZ_NameOffset_VAR]
-
-    PNWZ_LoopThroughName_LABEL:
-    
-
-    endBasicProc 0
-    ret 2
-endp padNameWithZeroes_PROC
