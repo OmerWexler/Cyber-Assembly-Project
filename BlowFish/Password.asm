@@ -55,7 +55,7 @@ proc validatePassword_PROC
 
     VP_PasswordInvalid_LABEL:
         mov dl, [byte ptr si]
-        cmp dl, Ascii_$
+        cmp dl, 00d
         je VP_Return_LABEL
 
         mov al, [false]

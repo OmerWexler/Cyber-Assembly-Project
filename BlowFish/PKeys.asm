@@ -23,7 +23,7 @@ proc generatePKeys_PROC
 	mov cx, [keysArrayLength]
 	GPK_passwordXorWithKeysIter_LABEL:
 		mov al, [byte ptr password + si]
-		compare ax, '==' ,Ascii_$
+		compare ax, '==' ,00d
 		checkBoolean [boolFlag], GPK_XorPasswordWithArray_LABEL, GPK_ResetPasswordIndex_LABEL  
 		
 		GPK_ResetPasswordIndex_LABEL:

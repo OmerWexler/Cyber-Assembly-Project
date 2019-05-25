@@ -3,9 +3,9 @@ PKeys dq 18 dup (00000000h)
 keysArrayLength dw 72d
 
 ;===== Password =====
-insertedPassword db 'defaultpass20202$', 0
-password         db 'defaultpass20202$', 0
-passwordLength dw 16d
+insertedPassword db 0,'omer20022', 0
+password         db 0,'owme2002', 0
+passwordLength dw 0d
 
 ;===== File Related Data =====
 currentReadFileName db '00000000.00000', 0
@@ -22,8 +22,8 @@ encryptedFileType db '.00000', 0
 decryptedFileName db 'decrypte'
 decryptedFileType db '.00000', 0
 
-overAllBytesRead        dd 6800000d 
-currentReadFileLength   dd 34000000d 
+overAllBytesWritten     dd 00000001d 
+currentReadFileLength   dd 00000001d 
 
 readBuffer db 512d dup (00h)
 
@@ -34,7 +34,8 @@ RStream         dd 11111111h ;32 BIT
 
 runMode dw 0000d
 proccesProgress dd 0000d
-proccesProgressString db '000', 0
+prevProccesProgress dd 0000d
+proccesProgressString db '000%', 0
 
 ;===== FKeys Array =====
 Fkeys dq 62 dup (00000000h)
@@ -85,6 +86,7 @@ TYPE_OpeningScreen equ Ascii_O
 TYPE_Decryption equ Ascii_D
 TYPE_Encryption equ Ascii_E
 
+STAGE_Clear equ Ascii_0
 STAGE_Intro equ Ascii_0
 STAGE_Name equ Ascii_1
 STAGE_Password equ Ascii_2
@@ -93,7 +95,9 @@ STAGE_EndGame equ Ascii_4 ;*SNAP*
 
 STATUS_Clear equ Ascii_0
 STATUS_InputInValid equ Ascii_1
+STATUS_Loaded equ Ascii_1
 STATUS_InputValid equ Ascii_2
+STATUS_NoDataFile equ Ascii_4
 
 nextEnabled db 00d 
 backEnabled db 00d 
@@ -101,9 +105,17 @@ decryptEnabled db 00d
 encryptEnabled db 00d
 restartEnabled db 00d 
 
+stringX dw 0000d
+stringY dw 0000d
+stringOffset dw 0000d
+isStringBuffingAllowed db 0000d
+
 ;===== General Constants =====
-readFileLengthLimit equ 14d
-passwordLengthLimit equ 17
+readFileLengthLimit equ 15d
+passwordLengthLimit equ 17d
+
+UPDATE_STRING equ 0d
+DONT_UPDATE_STRING equ 1d
 
 ;===== Screen hitboxes =====
 ;                    LowX , LowY , HighX, HighY, Button ID
@@ -129,3 +141,13 @@ rightClick equ 2d
 bothClick equ 3d
 
 currentStringReadIndex dw 0000d
+
+;===== String Coodinates =====
+nameX equ 88d
+nameY equ 138d
+
+passwordX equ 93d
+passwordY equ 138d
+
+precentX equ 71
+precentY equ 120

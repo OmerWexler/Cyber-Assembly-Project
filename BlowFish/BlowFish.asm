@@ -1,3 +1,73 @@
+;===== Sets the algorithm's run mode =====
+macro setRunMode SRM_NewRunMode_PARAM
+	
+	mov [runMode], SRM_NewRunMode_PARAM
+
+endm setRunMode
+
+;===== Calculates the algorithm progress =====
+macro calculateAndPrintProgress CAPP_X_PARAM, CAPP_Y_PARAM
+	
+	push CAPP_X_PARAM 
+	push CAPP_Y_PARAM
+	call calculateAndPrintProgress_PROC
+
+endm calculateAndPrintProgress
+
+CAPP_X_VAR equ bp + 6
+CAPP_Y_VAR equ bp + 4
+proc calculateAndPrintProgress_PROC
+	initBasicProc 0
+
+	xor edx, edx
+	mov ecx, 100d
+	mov eax, [currentReadFileLength]
+	div ecx
+
+	xor edx, edx
+	mov ecx, eax
+	mov eax, [overAllBytesWritten]
+	div ecx
+
+	mov [proccesProgress], eax
+
+	cmp eax, [prevProccesProgress]
+	je CAPP_Exit_LABEL
+
+	mov cx, 3d
+	CAPP_PrepareToPrint_LABEL:
+		push cx
+
+		xor di, di
+		mov di, cx
+		dec di
+
+		xor dx, dx
+		xor ah, ah
+		mov cl, 10d
+		div cl
+
+		mov dl, ah
+
+		add dl, Ascii_0
+		mov [byte ptr proccesProgressString + di], dl
+		
+		pop cx
+		loop CAPP_PrepareToPrint_LABEL
+		
+	printScreen
+	mov cx, [CAPP_X_VAR]
+	mov dx, [CAPP_Y_VAR]
+	printString proccesProgressString, cx, dx
+	
+	mov eax, [proccesProgress]
+	mov [prevProccesProgress], eax
+
+	CAPP_Exit_LABEL:
+		endBasicProc 0
+		ret 4
+endp calculateAndPrintProgress_PROC
+
 ;===== Creates a new file to write into =====
 proc createNewReturnFile_PROC
 
@@ -179,10 +249,12 @@ proc finishEncryption_PROC
 
 	mov ax, [word ptr RStream + 2d]
 	mov [word ptr dataBlockBuffer + 6d], ax
-	
+
+	xor eax, eax
 	mov ax, [FE_CharactersRead_VAR]
 	writeToFile [currentWriteFileHandle], ax, dataBlockBuffer
 
+	add [overAllBytesWritten], eax
 	mov [FE_CharactersRead_VAR], ax
 
 	endBasicProc 0
@@ -191,7 +263,7 @@ endp finishEncryption_PROC
 
 ;===== A recursive procedure that runs the full algorithm loop =====
 proc iterAlgoritm_PROC
-
+	
 	prepareAlgorithm ;the zeroes to delete is now inside the stack
 
 	compare [runMode], '==', 'E'
@@ -217,7 +289,7 @@ proc iterAlgoritm_PROC
 		call finishEncryption_PROC
 		add sp, 2d
 
-
+		calculateAndPrintProgress precentX, precentY
 		checkBoolean [boolFlag], IA_Recall_LABEL, IA_Exit_LABEL ;checks the already set boolean flag
 
 	IA_Recall_LABEL:
@@ -235,7 +307,7 @@ macro runAlgorithm RA_RunMode_VAR
 	mov [runMode], ax 
 	call runAlgorithm_PROC
 
-	;reset password index
+	; reset password index
 	mov ax, [currentPasswordIndex]
 	xor ax, [currentPasswordIndex]
 	mov [currentPasswordIndex], ax
@@ -246,8 +318,22 @@ proc runAlgorithm_PROC
 	initBasicProc 0
 
 	call createNewReturnFile_PROC
+	checkFileLength currentReadFileName
+	
 	openFile currentReadFileName, currentReadFileHandle, 'r'
 
+	mov [byte ptr proccesProgressString + 0], '0'
+	mov [byte ptr proccesProgressString + 1], '0'
+	mov [byte ptr proccesProgressString + 2], '0'
+	mov [byte ptr proccesProgressString + 3], '%'
+	mov [byte ptr proccesProgressString + 4], 0
+
+	mov [overAllBytesWritten], 00000001d
+
+	mov [proccesProgress], 0000d
+	mov [prevProccesProgress], 0000d
+
+	printString proccesProgressString, 71d, 120d
 	call iterAlgoritm_PROC
 
 	closeFile [currentReadFileHandle]
@@ -256,61 +342,3 @@ proc runAlgorithm_PROC
 	endBasicProc 0
 	ret 0
 endp runAlgorithm_PROC
-
-;===== Calculates the algorithm progress =====
-macro calculateAndPrintProgress CAPP_X_PARAM, CAPP_Y_PARAM
-	
-	push CAPP_X_PARAM 
-	push CAPP_Y_PARAM
-	call calculateAndPrintProgress_PROC
-
-endm calculateAndPrintProgress
-
-CAPP_X_VAR equ bp + 6
-CAPP_Y_VAR equ bp + 4
-proc calculateAndPrintProgress_PROC
-	initBasicProc 0
-
-	xor edx, edx
-	mov ecx, 100d
-	mov eax, [currentReadFileLength]
-	div ecx
-
-	xor edx, edx
-	mov ecx, eax
-	mov eax, [overAllBytesRead]
-	div ecx
-
-	mov [proccesProgress], eax
-
-	xor ax, ax
-	mov al, [byte ptr proccesProgress]
-	
-	mov cx, 3d
-	CAPP_PrepareToPrint_LABEL:
-		push cx
-		
-		mov di, 3d
-		sub di, cx
-
-		xor dx, dx
-		xor ah, ah
-
-		mov cl, 10d
-		div cl
-
-		mov dl, ah
-
-		add dl, Ascii_0
-		mov [byte ptr proccesProgressString + di], dl
-		
-		pop cx
-		loop CAPP_PrepareToPrint_LABEL
-		
-	mov cx, [CAPP_X_VAR]
-	mov dx, [CAPP_Y_VAR]
-	printString proccesProgressString, cx, dx
-	
-	endBasicProc 0
-	ret 4
-endp calculateAndPrintProgress_PROC

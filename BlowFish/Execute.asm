@@ -17,13 +17,13 @@ include 'Function.asm'
 include 'Password.asm'
 include 'Filename.asm'
 include 'Datafile.asm'
+include 'Strings.asm'
 include 'Graphics.asm'
 include 'BlowFish.asm'
 include 'PKeys.asm'
 include 'FKeys.asm'
 include 'Screens.asm'
 include 'Buttons.asm'
-include 'Strings.asm'
 
 macro initAllKeys 
 
@@ -37,6 +37,19 @@ macro initAllKeys
 	resetCurrentReadFilePointer 
 
 endm initAllKeys
+
+macro resetStringPrintIndex stringToReset
+
+	mov [byte ptr stringToReset], 00d
+
+endm resetStringPrintIndex
+
+macro updatePasswordLength
+
+	mov ax, [currentStringReadIndex]
+	mov [passwordLength], ax
+
+endm updatePasswordLength
 
 ;===== Debugging tool =====
 macro setCurrentReadFileToTester
@@ -104,163 +117,222 @@ start:
 		
 	initMouse
 	showMouse	
-	
+
 	printScreen
-	
-	createDataFile ;REMOVE AFTER DECRYPTION TESTING
-	
-	startA:
-		calculateAndPrintProgress 160, 100
-		jmp exit  
 	
 	EXE_OpeningScreen_LABEL: ;=====-===== Opening Screen ==========================================================================================================================================
 		
 		setupButtons [true], [false], [true], [true], [false]
+		enableStringBuffering [false]
 
 		OPS_OpeningScreen_LOOP: ;=== Opening Screen Loop ===
-			manageCurrentScreen decryptButton, EXE_Decryption_LABEL, encryptButton, EXE_Encryption_LABEL
+			manageCurrentScreenTriButton decryptButton, EXE_Decryption_LABEL, encryptButton, EXE_Encryption_LABEL, backButton, exit
 			jmp OPS_OpeningScreen_LOOP
 
+		EXE_Encryption_LABEL:
+			setRunMode 'E'
+			setNextScreenProperty sType, TYPE_Encryption
+			jmp EXE_Intro_LABEL
 
-	EXE_Decryption_LABEL: ;=====-===== Decryption screen ==========================================================================================================================================
-		
-		DEC_Intro_LABEL: ;===== Intro =====
-			
+		EXE_Decryption_LABEL: 
+			setRunMode 'D'
+			setNextScreenProperty sType, TYPE_Decryption
+			jmp EXE_Intro_LABEL
+
+		EXE_Intro_LABEL: ;===== Intro =====
 			setupButtons [true], [true], [false], [false], [false]
-			
-			DEC_Intro_LOOP:
-				manageCurrentScreen backButton, EXE_OpeningScreen_LABEL, nextButton, DEC_Name_LABEL
-				jmp DEC_Intro_LOOP
-			
-		DEC_Name_LABEL: ;===== Name Check =====
+			enableStringBuffering [false]
 
-			setupButtons [false], [false], [false], [false], [false]
+			EXE_Intro_LOOP:
+				manageCurrentScreen backButton, EXE_OpeningScreen_LABEL, nextButton, EXE_Name_LABEL
+				jmp EXE_Intro_LOOP
+			
+		EXE_Name_LABEL: ;===== Name Check =====
+			setupButtons [true], [false], [false], [false], [false]
+			enableStringBuffering [true]
+
+			resetStringPrintIndex currentReadFileName
+			resetStringReadIndex
+			printString currentReadFileName, nameX, nameY
+
+			printScreen
 			clearKeyboardBuffer
 
-			DEC_Name_LOOP: ;=== Name Empty Loop ===
+			EXE_Name_LOOP: ;=== Name Empty Loop ===
 				
-				manageCurrentScreen backButton, DEC_Intro_LABEL, nextButton, DEC_Password_LABEL
+				manageCurrentScreen backButton, EXE_Intro_LABEL, nextButton, EXE_Password_LABEL
 
 				readStringFromKeyboardITER currentReadFileName, readFileLengthLimit
-				checkBoolean [boolFlag], DEC_ValidateName_LABEL, DEC_Name_LOOP
+
+				checkBoolean [boolFlag], EXE_ValidateName_LABEL, EXE_Name_LOOP
 				
-				DEC_ValidateName_LABEL:
-						printString currentReadFileName, 88d, 138d
+				EXE_ValidateName_LABEL:
+						printString currentReadFileName, nameX, nameY
 
 						validateFile currentReadFileName
-						checkBoolean [boolFlag], DEC_NameValid_LABEL, DEC_NameInValid_LABEL
+						checkBoolean [boolFlag], EXE_NameValid_LABEL, EXE_NameInValid_LABEL
 						
-					jmp DEC_Name_LOOP 
+					jmp EXE_Name_LOOP 
 					
-			DEC_NameInValid_LABEL: ;=== Name InValid ===
-				setupButtons [false], [false], [false], [false], [false]
-				setNextScreenProperty status, STATUS_InputInvalid
-				
-				printScreen
-				printString currentReadFileName, 88d, 138d
-				
-				jmp DEC_Name_LOOP
-						
-			DEC_NameValid_LABEL:  ;=== Name Valid ===
-				setNextScreenProperty status, STATUS_InputValid
+				EXE_NameInValid_LABEL: 
+					setupButtons [true], [false], [false], [false], [false]
+					enableStringBuffering [true]
 
-				printScreen
-				printString currentReadFileName, 88d, 138d
-
-				setupButtons [true], [true], [false], [false], [false]
-				
-				DEC_NameValid_Loop:
-					manageCurrentScreen nextButton, DEC_Password_LABEL, backButton, DEC_Intro_LABEL
+					setNextScreenProperty status, STATUS_InputInvalid
 					
-					DEC_SkipNameRefresh_LABEL:
-						readStringFromKeyboardITER currentReadFileName, readFileLengthLimit
-						checkBoolean [boolFlag], DEC_ReValidateName_LABEL, DEC_NameValid_Loop
+					printScreen
+					printString currentReadFileName, nameX, nameY
 					
-					DEC_ReValidateName_LABEL:
-							printScreen
-							printString currentReadFileName, 88d, 138d
+					jmp EXE_Name_LOOP
+							
+				EXE_NameValid_LABEL:
+					setNextScreenProperty status, STATUS_InputValid
+					enableStringBuffering [true]
 
-							validateFile currentReadFileName
-							checkBoolean [boolFlag], DEC_NameValid_Loop, DEC_NameInValid_LABEL
+					printScreen
+					printString currentReadFileName, nameX, nameY
+					setupButtons [true], [true], [false], [false], [false]
+					
+					jmp EXE_Name_LOOP
+				
+
 									
-		DEC_Password_LABEL: ;===== Password =====
+		EXE_Password_LABEL: ;===== Password =====
+			setupButtons [true], [false], [false], [false], [false]
+			enableStringBuffering [true]
+
+			resetStringPrintIndex insertedPassword
+			resetStringReadIndex
+			printString insertedPassword, nameX, nameY
 			
+			compare [runMode], '==', 'E'
+			checkBooleanSingleJump [boolFlag], EXE_SkipDataFileRetrieve_LABEL
+			
+			validateFile dataFileName
+			flipBoolFlag
+			checkBooleanSingleJump [boolFlag], EXE_RequestDataFile_LABEL
+
 			retrieveDataFile
-			setupButtons [false], [false], [false], [false], [false]
+			
+			EXE_SkipDataFileRetrieve_LABEL:
+
 			resetStringReadIndex
 
-			DEC_Password_Loop: ;=== Password Empty Loop ===
+			EXE_Password_Loop: 
 				
-			manageCurrentScreen backButton, DEC_Intro_LABEL, nextButton, DEC_Password_LABEL
-						
-			readStringFromKeyboardITER insertedPassword, passwordLengthLimit
-			checkBoolean [boolFlag], DEC_ValidatePassword_LABEL, DEC_Password_Loop
-						
-			DEC_ValidatePassword_LABEL:					
-					printString insertedPassword, 93d, 138d
-
-					compareStrings password, insertedPassword 
-					checkBoolean [boolFlag], DEC_PasswordValid_LABEL, DEC_PasswordInValid_LABEL
-					
-				jmp DEC_Password_Loop 
-
-			DEC_PasswordValid_LABEL: ;=== Password Valid Loop ===
-				setupButtons [true], [true], [false], [false], [false]
-				setNextScreenProperty status, STATUS_InputValid
-				
-				printScreen
-				printString insertedPassword, 93d, 138d
-				
-				DEC_PasswordValid_LOOP:
-				
-						manageCurrentScreen nextButton, DEC_Loading_LABEL, backButton, DEC_Name_LABEL
-						
-						isAnyButtonLit
-						pop ax
-						compare ax, '!=', nextButton
-						checkBooleanSingleJump [boolFlag], DEC_SkipPasswordRefresh_LABEL
-						
-						printString insertedPassword, 93d, 138d
-
-					DEC_SkipPasswordRefresh_LABEL:
-						readStringFromKeyboardITER insertedPassword, readFileLengthLimit
-						checkBoolean [boolFlag], DEC_ReValidatePassword_LABEL, DEC_PasswordValid_LOOP
-					
-					DEC_ReValidatePassword_LABEL:
-							printScreen
-							printString insertedPassword, 93d, 138d
+				manageCurrentScreen backButton, EXE_Name_LABEL, nextButton, EXE_Loading_LABEL
 							
-							compareStrings password, insertedPassword 
-							checkBoolean [boolFlag], DEC_Password_Loop, DEC_PasswordInValid_LABEL
+				readStringFromKeyboardITER insertedPassword, passwordLengthLimit
+				updatePasswordLength
+
+				checkBoolean [boolFlag], EXE_ValidatePassword_LABEL, EXE_Password_Loop
 							
+				EXE_ValidatePassword_LABEL:
+					printString insertedPassword, passwordX, passwordY
+					
+					compare [runMode], '==', 'E'
+					checkBooleanSingleJump [boolFlag], EXE_PasswordValid_LABEL
 
-			DEC_PasswordInValid_LABEL: ;=== Password Invalid ===
-				setupButtons [false], [false], [false], [false], [false]
-				setNextScreenProperty status, STATUS_InputInvalid
-				
-				printScreen
-				printString insertedPassword, 93d, 138d
-				
-				jmp DEC_Password_Loop
-			
-		DEC_Loading_LABEL: ;===== Loading Screen =====
-			
-			setupButtons [false], [true], [false], [false], [false]
+					compareStrings password, insertedPassword
+					checkBoolean [boolFlag], EXE_PasswordValid_LABEL, EXE_PasswordInValid_LABEL
+						
+					jmp EXE_Password_Loop 
 
-			DEC_LoadingEmpty_LOOP: ;=== Loading Empty Loop ===
-			DEC_LoadingLoaded_LOOP: ;=== Loading Loaded Loop ===
+				EXE_PasswordValid_LABEL: ;=== Password Valid Loop ===
+					enableStringBuffering [true]
+
+					setupButtons [true], [true], [false], [false], [false]
+					setNextScreenProperty status, STATUS_InputValid
+					
+					printScreen
+					printString insertedPassword, passwordX, passwordY
+					
+					jmp EXE_Password_Loop
+
+				EXE_PasswordInValid_LABEL: ;=== Password Invalid ===
+					enableStringBuffering [true]
+					setupButtons [true], [false], [false], [false], [false]
+					setNextScreenProperty status, STATUS_InputInvalid
+					
+					printScreen
+					printString insertedPassword, passwordX, passwordY
+					
+					jmp EXE_Password_Loop
+
+				EXE_RequestDataFile_LABEL:
+					setupButtons [true], [false], [false], [false], [false]
+					enableStringBuffering [false]
+					setNextScreenProperty status, STATUS_NoDataFile
+					printScreen
+
+					EXE_RequestDataFile_Loop:
+						manageCurrentScreen backButton, EXE_Name_LABEL, nextButton, EXE_Name_LABEL
+						jmp EXE_RequestDataFile_Loop
+
+					jmp EXE_RequestDataFile_LABEL
+
 			
-		DEC_EndGame_LABEL: ;===== End Game *SNAP* =====
+		EXE_Loading_LABEL: ;===== Loading Screen =====
+			enableStringBuffering [true]
+			copyFileTypeToAlgorithmFiles currentReadFileName
 	
-			setupButtons [true], [false], [false], [false], [true]
+			compare [runMode], '==', 'D'
+			checkBooleanSingleJump [boolFlag], EXE_RunBLOWFISH_LABEL
 
-			DEC_EndGame_LOOP: ;=== End Game *SNAP Loop ===
+			EXE_GenerateDataFile_LABEL:
+				copyString password, insertedPassword
+				initAllKeys
+				createDataFile
+				jmp EXE_RunBLOWFISH_LABEL
+
+			EXE_RunBLOWFISH_LABEL:
+				runAlgorithm [runMode]
+
+				enableStringBuffering [false]
+
+				compare [runMode], '==', 'E'
+				checkBooleanSingleJump [boolFlag], EXE_DeleteEncryptionFiles_LABEL
+
+				compare [runMode], '==', 'D'
+				checkBooleanSingleJump [boolFlag], EXE_DeleteDecryptionFiles_LABEL
+
+				EXE_DeleteEncryptionFiles_LABEL:
+					renameFile encryptedFileName, currentReadFileName
+					jmp EXE_ContinueToEndGame_LABEL
+					
+				EXE_DeleteDecryptionFiles_LABEL:
+					renameFile decryptedFileName, currentReadFileName
+					DeleteFile dataFileName
+					
+					jmp EXE_ContinueToEndGame_LABEL
+
+				EXE_ContinueToEndGame_LABEL:
+					setupButtons [false], [true], [false], [false], [false]
+					enableStringBuffering [true]
+					setNextScreenProperty status, STATUS_Loaded
+					
+					printScreen
+					printString proccesProgressString, precentX, precentY
+					 
+			EXE_Loaded_Loop:
+				manageCurrentScreen nextButton, EXE_EndGame_LABEL, backButton, EXE_EndGame_LABEL
+				jmp EXE_Loaded_Loop
 			
+		EXE_EndGame_LABEL: ;===== End Game *SNAP* =====
+			setupButtons [true], [false], [false], [false], [true]
+			enableStringBuffering [false]
+			
+			printScreen
 
-	EXE_Encryption_LABEL: ;=====-===== Encryption Screens ==========================================================================================================================================
+			EXE_EndGame_LOOP: ;=== End Game *SNAP Loop ===
 
-
+				manageCurrentScreen backButton, exit, restartButton, start
+				jmp EXE_EndGame_LOOP
 exit:
+printScreen
+switchGraphicsMode 'g'
+switchGraphicsMode 't'
+
 mov ax, 4C00h
 int 21h
 end start 

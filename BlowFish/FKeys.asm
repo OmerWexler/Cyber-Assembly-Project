@@ -96,7 +96,7 @@ proc generateFKeys_PROC
 	
 	mov cx, [FkeysArrayLength]
     GFK_passwordXorWithKeysIter_LABEL:
-        cmp [password + si], 24h
+        cmp [password + si], 00d
         jne GFK_skipPasswordReset_LABEL
         
         xor si, si

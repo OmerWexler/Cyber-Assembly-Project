@@ -66,6 +66,7 @@ proc executeNextButton_PROC
     inc al
     mov [byte ptr nextScreen  + stage], al
 
+    setNextScreenProperty status, STATUS_Clear
     endBasicProc 0
     ret 0
 endp executeNextButton_PROC
@@ -75,6 +76,7 @@ proc executeDecryptButton_PROC
     initBasicProc 0
 
     setNextScreenProperty sType, TYPE_Decryption
+    setNextScreenProperty status, STATUS_Clear
 
     endBasicProc 0
     ret 0
@@ -85,6 +87,7 @@ proc executeEncryptButton_PROC
     initBasicProc 0
 
     setNextScreenProperty sType, TYPE_Encryption
+    setNextScreenProperty status, STATUS_Clear
 
     endBasicProc 0
     ret 0
@@ -95,6 +98,8 @@ proc executeRestartButton_PROC
     initBasicProc 0
 
     setNextScreenProperty sType, TYPE_OpeningScreen
+    setNextScreenProperty status, STATUS_Clear
+    setNextScreenProperty stage, STAGE_Clear
 
     endBasicProc 0
     ret 0

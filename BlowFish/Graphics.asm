@@ -47,7 +47,6 @@ macro printBMP PBMP_Name_PARAM, PBMP_X_PARAM, PBMP_Y_PARAM, PBMP_ColorToFilter
 	call ReadPalette
 	call CopyPal
 	
-	
 	pop dx
 	pop cx
 	
@@ -133,12 +132,12 @@ proc printScreen_PROC
 	checkBoolean [boolFlag], PBMP_Filevalid_LABEL, PBMP_FileInvalid_LABEL
 	
 	PBMP_Filevalid_LABEL:
-		copyFileName currentScreen, nextScreen
+		copyString currentScreen, nextScreen
 
 		printBMP currentScreen, 0, 0, 'N'
 
 	PBMP_FileInvalid_LABEL:
-		copyFileName nextScreen, currentScreen
+		copyString nextScreen, currentScreen
 
 		endBasicProc 0
 		ret 0
@@ -307,11 +306,15 @@ endp CopyBitmapForPrintByPosition
 ;===== Prints a string to the screen using BMP characters (at a given XY) =====
 macro printString PS_StringToPrint_PARAM, PS_X_PARAM, PS_Y_PARAM
 
+	mov [stringOffset], offset PS_StringToPrint_PARAM 
+	mov [stringX], PS_X_PARAM
+	mov [stringY], PS_Y_PARAM
+
 	push offset PS_StringToPrint_PARAM
 	push PS_X_PARAM
 	push PS_Y_PARAM
 	call printString_PROC
-	
+
 endm printString
 
 PS_StringToPrintOffset_VAR equ bp + 8
@@ -320,6 +323,11 @@ PS_Y_VAR equ bp + 4
 proc printString_PROC
 	initBasicProc 0	
 	
+	checkBoolean [isStringBuffingAllowed], PS_AllowPrint_LABEL, PS_Exit_LABEL
+
+	jmp PS_Exit_LABEL
+
+	PS_AllowPrint_LABEL:
 	mov si, [PS_StringToPrintOffset_VAR]
 
 	PS_PrintLoop_LABEL:
@@ -348,3 +356,11 @@ proc printString_PROC
 	endBasicProc 0
 	ret 6
 endp printString_PROC
+
+;===== Sets the string buffering boolean to a given value =====
+macro enableStringBuffering ESB_IsAllowed_PARAM
+	
+	mov al, ESB_IsAllowed_PARAM
+	mov [isStringBuffingAllowed], al
+
+endm enableStringBuffering

@@ -112,6 +112,7 @@ proc readStringFromKeyboardITER_PROC
         compare [currentStringReadIndex], '==', 0
         checkBooleanSingleJump [boolFlag], RKS_SkipDEC_LABEL
 
+        mov [byte ptr di], 00d
         dec di
 
         RKS_SkipDEC_LABEL:

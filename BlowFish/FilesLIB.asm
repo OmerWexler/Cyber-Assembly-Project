@@ -314,7 +314,7 @@ proc checkFileLength_PROC
 	push 'r'
 	call openFile_PROC
 
-	mov bx, [currentWriteFileHandle]
+	mov bx, [currentReadFileHandle]
 	mov al, 2d
 	mov cx, 0000d
 	mov dx, 0000d
@@ -339,3 +339,14 @@ proc checkFileLength_PROC
         endBasicProc 0
         ret 2
 endp checkFileLength_PROC
+
+;===== Change the name of a closed file =====
+macro renameFile RF_OldFileName_PARAM, RF_NewFileName_PARAM
+	
+	mov dx, offset RF_OldFileName_PARAM
+	mov di, offset RF_NewFileName_PARAM
+	
+	mov ah, 56h
+	int 21h
+
+endm renameFile

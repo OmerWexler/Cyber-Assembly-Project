@@ -17,13 +17,11 @@ proc createDataFile_PROC
     createFile dataFileName, [currentWriteFileHandle]
 
     writeToFile [currentWriteFileHandle], [keysArrayLength], Pkeys
-    writeToFile [currentWriteFileHandle], [FkeysArrayLength], Fkeys    
-    writeToFile [currentWriteFileHandle], [passwordLength], password    
+    writeToFile [currentWriteFileHandle], [FkeysArrayLength], Fkeys 
     writeToFile [currentWriteFileHandle], 2d, passwordLength    
+    writeToFile [currentWriteFileHandle], [passwordLength], password    
     
     closeFile [currentWriteFileHandle]
-
-    ;add a close file statement for data file
     endBasicProc 0
     ret 0
 endp createDataFile_PROC
@@ -44,10 +42,13 @@ proc retrieveDataFile_PROC
     
     readFromFile currentReadFileHandle, [keysArrayLength], Pkeys
     readFromFile currentReadFileHandle, [FkeysArrayLength], Fkeys    
+    readFromFile currentReadFileHandle, 2d, passwordLength 
     readFromFile currentReadFileHandle, [passwordLength], password  
-    readFromFile currentReadFileHandle, 2d, passwordLength  
-
+    
     closeFile [currentReadFileHandle]
+
+    mov [passwordLength], di
+	mov [byte ptr password + di], 00d    
 
     endBasicProc 0
     ret 0

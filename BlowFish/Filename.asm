@@ -40,47 +40,6 @@ proc copyFileTypeToAlgorithmFiles_PROC
     ret 0
 endp copyFileTypeToAlgorithmFiles_PROC
 
-;===== Copies from one file name to another (including type) =====
-macro copyFileName CFN_FileNameToCopyTo_PARAM, CFN_FileNameToCopyFrom_PARAM 
-    pushAll
-
-    push offset CFN_FileNameToCopyTo_PARAM
-    push offset CFN_FileNameToCopyFrom_PARAM
-    call copyFileName_PROC
-
-    popAll
-endm copyFileName
-
-CFN_FileNameToCopyToOffset_VAR equ bp + 6
-CFN_FileNameToCopyFromOffset_VAR equ bp + 4
-proc copyFileName_PROC
-    initBasicProc 0
-
-    mov di, [CFN_FileNameToCopyToOffset_VAR]
-    mov si, [CFN_FileNameToCopyFromOffset_VAR]
-    xor ax, ax
-
-    CFN_CopyLoop_LABEL:
-        xor ax, ax
-        mov al, [byte ptr si]
-        
-        compare ax, '==', 0000d
-        checkBoolean [boolFlag], CFN_Exit_LABEL, CFN_Continue_LABEL
-
-        CFN_Continue_LABEL:
-        mov [byte ptr di], al
-
-        inc si
-        inc di
-
-        jmp CFN_CopyLoop_LABEL
-
-
-    CFN_Exit_LABEL:
-    endBasicProc 0 
-    ret 4
-endp copyFileName_PROC
-
 macro compareFileNames CFN_FileA_PARAM, CFN_FileB_PARAM
     
     push offset CFN_FileA_PARAM
@@ -125,3 +84,25 @@ proc compareFileNames_PROC
     endBasicProc 0
     ret 4
 endp compareFileNames_PROC
+
+macro padNameWithZeroes PNWZ_Name_PARAM, PNWZ_OffsetToStartFrom_PARAM
+
+    push PNWZ_OffsetToStartFrom_PARAM
+    push offset PNWZ_Name_PARAM
+    call padNameWithZeroes_PROC
+    
+endm padNameWithZeroes
+
+PNWZ_NameOffset_VAR equ bp + 6
+PNWZ_NameOffset_VAR equ bp + 4
+proc padNameWithZeroes_PROC
+    initBasicProc 0    
+
+    mov di, [PNWZ_NameOffset_VAR]
+
+    PNWZ_LoopThroughName_LABEL:
+    
+
+    endBasicProc 0
+    ret 2
+endp padNameWithZeroes_PROC

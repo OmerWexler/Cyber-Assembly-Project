@@ -98,11 +98,16 @@ proc checkTile_PROC
 endp checkTile_PROC
 
 ;===== Checks if the mouse is inside the hitbox of any button and changes accordingly =====
-macro updateButtons
+macro updateButtons UB_ShouldUpdateString_PARAM
+
+    push UB_ShouldUpdateString_PARAM
     call updateButtons_PROC
+
 endm updateButtons
 
+UB_ShouldUpdateString_VAR equ bp + 4
 proc updateButtons_PROC
+    initBasicProc 0
 
     UB_Check_LABEL:
         setBoolFlag [false]
@@ -150,10 +155,19 @@ proc updateButtons_PROC
         
         UB_UpdateNeeded_LABEL:
             printScreen
+            
+            ; checkBooleanSingleJump [UB_ShouldUpdateString_VAR], UB_Finish_LABEL  
+
+            push [stringOffset]
+            push [stringX]
+            push [stringY]
+            call printString_PROC
+
             jmp UB_Finish_LABEL
 
     UB_Finish_LABEL:
-    ret 0
+    endBasicProc 0
+    ret 2
 endp updateButtons_PROC
 
 ;===== Sets the current screen type - O (opening), D (decryption), E (encryption) =====
@@ -333,6 +347,7 @@ endp checkMouseClick_PROC
 macro manageCurrentScreen MCS_ButtonToSwitch1_PARAM, MCS_LabelIfSwitch1_PARAM, MCS_ButtonToSwitch2_PARAM, MCS_LabelIfSwitch2_PARAM
 
     push 0000d ;allocate return room
+    push 1
     call manageCurrentScreen_PROC
     pop ax
 
@@ -344,12 +359,37 @@ macro manageCurrentScreen MCS_ButtonToSwitch1_PARAM, MCS_LabelIfSwitch1_PARAM, M
 
 endm manageCurrentScreen
 
-MCS_ButtonPressed_VAR equ bp + 4
+;===== Loops through one screen type/status life cycle (until change occurs) =====
+;as described in - (screens/screen logics.png)
+macro manageCurrentScreenTriButton MCS_ButtonToSwitch1_PARAM, MCS_LabelIfSwitch1_PARAM, MCS_ButtonToSwitch2_PARAM, MCS_LabelIfSwitch2_PARAM, MCS_ButtonToSwitch3_PARAM, MCS_LabelIfSwitch3_PARAM
+
+    xor ax, ax
+    mov al, 1
+    
+    push 0000d ;allocate return room
+    push 1
+    call manageCurrentScreen_PROC
+    pop ax
+
+    compare ax, '==', MCS_ButtonToSwitch1_PARAM
+    checkBooleanSingleJump [boolFlag], MCS_LabelIfSwitch1_PARAM
+    
+    compare ax, '==', MCS_ButtonToSwitch2_PARAM
+    checkBooleanSingleJump [boolFlag], MCS_LabelIfSwitch2_PARAM
+    
+    compare ax, '==', MCS_ButtonToSwitch3_PARAM
+    checkBooleanSingleJump [boolFlag], MCS_LabelIfSwitch3_PARAM
+
+endm manageCurrentScreen
+
+MCS_ButtonPressed_VAR equ bp + 6
+MSC_ShouldUpdateString_VAR equ bp + 4
 proc manageCurrentScreen_PROC
     initBasicProc 0
 
     readMouse
-    updateButtons
+    mov ax, [MSC_ShouldUpdateString_VAR]
+    updateButtons ax
 
     isAnyButtonLit ;Button lit is now in stack, pop needed
     pop ax    
@@ -367,7 +407,7 @@ proc manageCurrentScreen_PROC
 
     MCS_Exit_LABEL:
         endBasicProc 0
-        ret 0
+        ret 2
 endp manageCurrentScreen_PROC
 
 ;===== Check current screen type and sets boolFlag accordigly =====
